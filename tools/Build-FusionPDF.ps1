@@ -171,7 +171,7 @@ if (-not $SansFenetre) {
     $p = Start-Process -FilePath $exeTmp -PassThru
     $limite = (Get-Date).AddSeconds(20)
     do { Start-Sleep -Milliseconds 300; $p.Refresh() } while (-not $p.HasExited -and $p.MainWindowHandle -eq 0 -and (Get-Date) -lt $limite)
-    if ($p.HasExited) { Echec "la fenetre s'est fermee seule (code $($p.ExitCode)), voir %LOCALAPPDATA%\Fusion PDF\FusionPDF.log" }
+    if ($p.HasExited) { Echec "la fenetre s'est fermee seule (code $($p.ExitCode)), voir %LOCALAPPDATA%\FusionPDF\FusionPDF.log" }
     if ($p.MainWindowHandle -eq 0) { try { $p.Kill() } catch { }; Echec 'aucune fenetre apres 20 s' }
     Start-Sleep -Milliseconds 800
     $p.Refresh()

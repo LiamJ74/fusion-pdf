@@ -24,7 +24,7 @@
 # FusionPDF.exe.old-<date>, supprime a l'installation suivante.
 #
 # Conclusion sur l'etat RELU : exe a la bonne version, raccourci, deux cles.
-# Journal : C:\ProgramData\Autopilot-Setup\FusionPDF-install.log
+# Journal : C:\ProgramData\FusionPDF\FusionPDF-install.log (%LOCALAPPDATA%\FusionPDF sans droits admin)
 # PowerShell 5.1, ASCII strict, contexte SYSTEME.
 # ============================================================
 
@@ -41,7 +41,7 @@ $Description = 'Assembler plusieurs PDF en un seul fichier, dans l ordre voulu. 
 $Verbe    = 'Merge the PDFs in this folder'
 if ([Globalization.CultureInfo]::InstalledUICulture.TwoLetterISOLanguageName -eq 'fr') { $Verbe = 'Fusionner les PDF de ce dossier' }
 $NomCle   = 'FusionPDF'
-$LogDir   = 'C:\ProgramData\Autopilot-Setup'
+$LogDir   = $(if (([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) { 'C:\ProgramData\FusionPDF' } else { Join-Path $env:LOCALAPPDATA 'FusionPDF' })
 $Journal  = Join-Path $LogDir 'FusionPDF-install.log'
 
 $racinePF = $env:ProgramW6432

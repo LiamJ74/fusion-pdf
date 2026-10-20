@@ -20,9 +20,9 @@ liste. Rien n'est écrit sous le nom final quand une fusion échoue.
 
 ## Où regarder
 
-- Journal de l'application, par utilisateur : `%LOCALAPPDATA%\Fusion PDF\FusionPDF.log`.
+- Journal de l'application, par utilisateur : `%LOCALAPPDATA%\FusionPDF\FusionPDF.log`.
   La sortie complète de qpdf et toute erreur inattendue y sont ; l'utilisateur ne
   voit qu'un message en clair.
 - Codes de sortie de qpdf : **0** parfait, **3** avertissements (résultat gardé,
   lisible) ; tout autre code est un échec, et la sortie temporaire est supprimée.
-- Installation : `C:\ProgramData\Autopilot-Setup\FusionPDF-install.log`.
+- Installation : `C:\ProgramData\FusionPDF\FusionPDF-install.log`.

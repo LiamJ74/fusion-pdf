@@ -29,7 +29,7 @@ namespace FusionPDF
         }
     }
 
-    /// <summary>Journal par utilisateur : %LOCALAPPDATA%\Fusion PDF\FusionPDF.log.</summary>
+    /// <summary>Journal par utilisateur : %LOCALAPPDATA%\FusionPDF\FusionPDF.log.</summary>
     public static class Journal
     {
         static readonly object verrou = new object();
@@ -39,7 +39,7 @@ namespace FusionPDF
             get
             {
                 return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-                                    "Fusion PDF", "FusionPDF.log");
+                                    "FusionPDF", "FusionPDF.log");
             }
         }
 

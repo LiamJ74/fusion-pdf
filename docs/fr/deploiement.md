@@ -29,7 +29,7 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\install.ps1
 | Menu Démarrer | `C:\ProgramData\Microsoft\Windows\Start Menu\Programs\Fusion PDF.lnk` |
 | Clic droit sur un dossier | `HKLM\SOFTWARE\Classes\Directory\shell\FusionPDF` (`"%1"`) |
 | Clic droit dans un dossier | `HKLM\SOFTWARE\Classes\Directory\Background\shell\FusionPDF` (`"%V"`) |
-| Journal | `C:\ProgramData\Autopilot-Setup\FusionPDF-install.log` |
+| Journal | `C:\ProgramData\FusionPDF\FusionPDF-install.log` (ou `%LOCALAPPDATA%\FusionPDF\` sans droits administrateur) |
 
 Le libellé du clic droit suit la langue d'installation de Windows. Le script
 conclut sur **l'état relu** (version de l'exécutable, raccourci, les deux clés),
@@ -110,9 +110,9 @@ toucher à une application existante du même nom.
 
 | | |
 |---|---|
-| Installation, désinstallation | `C:\ProgramData\Autopilot-Setup\FusionPDF-*.log` |
-| Application (par utilisateur) | `%LOCALAPPDATA%\Fusion PDF\FusionPDF.log` : sortie complète de qpdf et erreurs inattendues |
-| Choix de langue (par utilisateur) | `%LOCALAPPDATA%\Fusion PDF\langue.txt` |
+| Installation, désinstallation | `C:\ProgramData\FusionPDF\FusionPDF-*.log` en administrateur ou SYSTEM, sinon `%LOCALAPPDATA%\FusionPDF\` |
+| Application (par utilisateur) | `%LOCALAPPDATA%\FusionPDF\FusionPDF.log` : sortie complète de qpdf et erreurs inattendues |
+| Choix de langue (par utilisateur) | `%LOCALAPPDATA%\FusionPDF\langue.txt` |
 
 ## Ligne de commande
 

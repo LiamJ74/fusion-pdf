@@ -20,8 +20,8 @@ Nothing is written under the final name when a merge fails.
 
 ## Where to look
 
-- Application log, per user: `%LOCALAPPDATA%\Fusion PDF\FusionPDF.log` — the full
+- Application log, per user: `%LOCALAPPDATA%\FusionPDF\FusionPDF.log` — the full
   qpdf output and any unexpected error are there; the user only sees a plain message.
 - qpdf exit codes: **0** perfect, **3** warnings (result kept, readable); anything
   else is a failure, and the temporary output is deleted.
-- Installation: `C:\ProgramData\Autopilot-Setup\FusionPDF-install.log`.
+- Installation: `C:\ProgramData\FusionPDF\FusionPDF-install.log`.

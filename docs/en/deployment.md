@@ -28,7 +28,7 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\install.ps1
 | Start menu | `C:\ProgramData\Microsoft\Windows\Start Menu\Programs\Fusion PDF.lnk` |
 | Right-click on a folder | `HKLM\SOFTWARE\Classes\Directory\shell\FusionPDF` (`"%1"`) |
 | Right-click inside a folder | `HKLM\SOFTWARE\Classes\Directory\Background\shell\FusionPDF` (`"%V"`) |
-| Log | `C:\ProgramData\Autopilot-Setup\FusionPDF-install.log` |
+| Log | `C:\ProgramData\FusionPDF\FusionPDF-install.log` (or `%LOCALAPPDATA%\FusionPDF\` when run without admin rights) |
 
 The right-click label follows the language Windows was installed in. The script
 ends on the **state read back** (executable version, shortcut, both keys), not
@@ -106,9 +106,9 @@ Good to know — all observed in production:
 
 | | |
 |---|---|
-| Installation, uninstallation | `C:\ProgramData\Autopilot-Setup\FusionPDF-*.log` |
-| Application (per user) | `%LOCALAPPDATA%\Fusion PDF\FusionPDF.log` — full qpdf output and unexpected errors |
-| Language choice (per user) | `%LOCALAPPDATA%\Fusion PDF\langue.txt` |
+| Installation, uninstallation | `C:\ProgramData\FusionPDF\FusionPDF-*.log` as administrator or SYSTEM, otherwise `%LOCALAPPDATA%\FusionPDF\` |
+| Application (per user) | `%LOCALAPPDATA%\FusionPDF\FusionPDF.log` — full qpdf output and unexpected errors |
+| Language choice (per user) | `%LOCALAPPDATA%\FusionPDF\langue.txt` |
 
 ## Command line
 

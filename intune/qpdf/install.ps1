@@ -9,12 +9,12 @@
 # Program Files\WindowsApps (App Installer). Bounded wait: 20 minutes.
 # Concludes on the state READ BACK (qpdf.exe present), not on the exit code.
 #
-# Log: C:\ProgramData\Autopilot-Setup\qpdf-install.log
+# Log: C:\ProgramData\FusionPDF\qpdf-install.log
 # PowerShell 5.1, strict ASCII.
 # ============================================================
 
 $Id      = 'QPDF.QPDF'
-$LogDir  = 'C:\ProgramData\Autopilot-Setup'
+$LogDir  = 'C:\ProgramData\FusionPDF'
 $Journal = Join-Path $LogDir 'qpdf-install.log'
 $DelaiMs = 20 * 60 * 1000
 

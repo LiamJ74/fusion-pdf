@@ -10,7 +10,7 @@
 # Une fenetre Fusion PDF encore ouverte est fermee (attente bornee a
 # 15 s), sinon l'exe ne pourrait pas etre supprime.
 #
-# Journal : C:\ProgramData\Autopilot-Setup\FusionPDF-uninstall.log
+# Journal : C:\ProgramData\FusionPDF\FusionPDF-uninstall.log (%LOCALAPPDATA%\FusionPDF sans droits admin)
 # PowerShell 5.1, ASCII strict, contexte SYSTEME.
 # ============================================================
 
@@ -18,7 +18,7 @@
 param()
 
 $NomCle  = 'FusionPDF'
-$LogDir  = 'C:\ProgramData\Autopilot-Setup'
+$LogDir  = $(if (([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) { 'C:\ProgramData\FusionPDF' } else { Join-Path $env:LOCALAPPDATA 'FusionPDF' })
 $Journal = Join-Path $LogDir 'FusionPDF-uninstall.log'
 
 $racinePF = $env:ProgramW6432
