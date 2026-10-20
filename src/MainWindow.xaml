@@ -367,6 +367,11 @@
             <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="16,0,12,0">
               <TextBlock x:Name="TxtZone" Text="§Glissez ici des PDF ou un dossier§" FontSize="14.5" FontWeight="SemiBold" Foreground="{StaticResource P900}"/>
               <TextBlock Text="§Ils s'ajoutent à la liste. L'ordre de la liste est l'ordre de la fusion.§" Foreground="{StaticResource G500}" FontSize="12.5" Margin="0,2,0,0" TextWrapping="Wrap"/>
+              <!-- Texte dans un TextBlock : en Content direct, un « _ » serait pris pour une touche d'accès. -->
+              <CheckBox x:Name="ChkSousDossiers" Margin="0,6,0,0" VerticalContentAlignment="Center" Foreground="{StaticResource G700}"
+                        ToolTip="§Prend aussi les PDF des sous-dossiers, dossier par dossier, dans l'ordre de l'Explorateur. Le choix est mémorisé.§">
+                <TextBlock Text="§Inclure les sous-dossiers§" FontSize="12.5"/>
+              </CheckBox>
             </StackPanel>
             <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
               <Button x:Name="BtnDossier" Style="{StaticResource BtnPrim}" ToolTip="§Ajouter tous les PDF d'un dossier§">
@@ -560,6 +565,8 @@
             </StackPanel>
           </Button>
           <TextBlock x:Name="TxtAideFusion" Foreground="{StaticResource G500}" FontSize="12" HorizontalAlignment="Center" Margin="0,6,0,0"/>
+          <!-- Version, lue dans l'exe par le code : ne peut pas diverger de la version réelle. -->
+          <TextBlock x:Name="TxtVersion" Foreground="#9CA3AF" FontSize="11" HorizontalAlignment="Right" Margin="0,8,0,0"/>
         </StackPanel>
 
         <StackPanel x:Name="ZoneProgres" Grid.Row="1" Grid.ColumnSpan="2" Margin="0,14,0,0" Visibility="Collapsed">
@@ -646,7 +653,7 @@
 
               <TextBlock Style="{StaticResource Titre}" Text="§Depuis l'Explorateur, sans ouvrir l'application§"/>
               <TextBlock Style="{StaticResource Texte}">§Clic droit sur un dossier, puis <Bold>«&#160;Afficher d'autres options&#160;»</Bold> et <Bold>«&#160;Fusionner les PDF de ce dossier&#160;»</Bold>. Fusion PDF s'ouvre avec tous les PDF du dossier, déjà triés.§</TextBlock>
-              <TextBlock Style="{StaticResource Texte}" Foreground="#6B7280">§Raccourci : Maj + clic droit affiche directement la commande. Les PDF des sous-dossiers ne sont pas pris.§</TextBlock>
+              <TextBlock Style="{StaticResource Texte}" Foreground="#6B7280">§Raccourci : Maj + clic droit affiche directement la commande. Pour prendre aussi les PDF des sous-dossiers, cochez <Bold>«&#160;Inclure les sous-dossiers&#160;»</Bold> : ils suivent, dossier par dossier, dans l'ordre de l'Explorateur.§</TextBlock>
 
               <TextBlock Style="{StaticResource Titre}" Text="§Changer l'ordre§"/>
               <TextBlock Style="{StaticResource Texte}">§• <Bold>Glissez une ligne</Bold> à sa place : un trait bleu montre où elle va. Ctrl ou Maj pour en déplacer plusieurs.§</TextBlock>

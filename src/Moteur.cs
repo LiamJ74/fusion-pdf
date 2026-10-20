@@ -182,6 +182,107 @@ namespace FusionPDF
             return false;
         }
 
+        /// <summary>Un PDF à prendre en chargeant un dossier : ni une fusion produite, ni un fichier caché.</summary>
+        public static bool EstPdfAPrendre(string chemin)
+        {
+            if (!string.Equals(Path.GetExtension(chemin), ".pdf", StringComparison.OrdinalIgnoreCase)) return false;
+            if (EstUneSortie(Path.GetFileName(chemin))) return false;
+            try { return (File.GetAttributes(chemin) & FileAttributes.Hidden) == 0; }
+            catch { return false; }
+        }
+
+        /// <summary>Au-delà, on ne descend plus : protège d'une jonction qui boucle.</summary>
+        public const int ProfondeurMax = 32;
+
+        /// <summary>
+        /// Les PDF d'un dossier, dans l'ordre de l'arborescence de l'Explorateur :
+        /// d'abord ceux du dossier (tri naturel), puis, si sousDossiers, chaque
+        /// sous-dossier dans l'ordre naturel de son nom, et ses propres
+        /// sous-dossiers à sa suite.
+        /// Les dossiers cachés ou système sont ignorés. Un dossier déjà parcouru
+        /// ne l'est pas deux fois. Les dossiers OneDrive « en ligne seulement »
+        /// sont parcourus sans être téléchargés : énumérer ne rapatrie rien.
+        /// </summary>
+        public static List<string> PdfDuDossier(string dossier, bool sousDossiers)
+        {
+            List<string> res = new List<string>();
+            Parcourir(dossier, sousDossiers, 0, res, new HashSet<string>(StringComparer.OrdinalIgnoreCase));
+            return res;
+        }
+
+        static void Parcourir(string d, bool sousDossiers, int profondeur, List<string> res, HashSet<string> vus)
+        {
+            string plein;
+            try { plein = Path.GetFullPath(d).TrimEnd('\\'); }
+            catch { return; }
+            if (profondeur > ProfondeurMax || !vus.Add(plein)) return;
+            try
+            {
+                foreach (string f in Directory.EnumerateFiles(d).Where(EstPdfAPrendre).OrderBy(f => Path.GetFileName(f), TriNaturel.Instance))
+                    res.Add(f);
+            }
+            catch (Exception e)
+            {
+                Journal.Ecrire("Dossier illisible : " + d + " : " + e.Message);
+                return;
+            }
+            if (!sousDossiers) return;
+            string[] sous;
+            try { sous = Directory.GetDirectories(d); }
+            catch (Exception e) { Journal.Ecrire("Sous-dossiers illisibles : " + d + " : " + e.Message); return; }
+            foreach (string s in sous.OrderBy(x => Path.GetFileName(x), TriNaturel.Instance))
+            {
+                FileAttributes a;
+                try { a = File.GetAttributes(s); }
+                catch { continue; }
+                if ((a & (FileAttributes.Hidden | FileAttributes.System)) != 0) continue;
+                if ((a & FileAttributes.ReparsePoint) != 0 && EstLien(s)) continue;
+                Parcourir(s, true, profondeur + 1, res, vus);
+            }
+        }
+
+        // Jonctions et liens symboliques : on ne les suit pas (comme robocopy /XJ).
+        // Constaté par l'autotest le 20/10 : une jonction vers un dossier parent
+        // présente le même dossier sous un autre chemin, et le contrôle « déjà
+        // parcouru » ne la voit pas. On les reconnaît au bit « substitut de nom »
+        // de leur étiquette (0x20000000), que portent IO_REPARSE_TAG_MOUNT_POINT
+        // et IO_REPARSE_TAG_SYMLINK, mais PAS les dossiers OneDrive (étiquettes
+        // IO_REPARSE_TAG_CLOUD_*), qui restent donc parcourus.
+        const uint SubstitutDeNom = 0x20000000;
+
+        static bool EstLien(string dossier)
+        {
+            WIN32_FIND_DATA d;
+            IntPtr h = FindFirstFileW(dossier.TrimEnd('\\'), out d);
+            if (h == new IntPtr(-1)) return true;   // illisible : prudence, on ne descend pas
+            FindClose(h);
+            return (d.dwReserved0 & SubstitutDeNom) != 0;
+        }
+
+        [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
+        struct WIN32_FIND_DATA
+        {
+            public uint dwFileAttributes;
+            public System.Runtime.InteropServices.ComTypes.FILETIME ftCreationTime, ftLastAccessTime, ftLastWriteTime;
+            public uint nFileSizeHigh, nFileSizeLow, dwReserved0, dwReserved1;
+            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 260)] public string cFileName;
+            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 14)] public string cAlternateFileName;
+        }
+
+        [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
+        static extern IntPtr FindFirstFileW(string nom, out WIN32_FIND_DATA donnees);
+
+        [DllImport("kernel32.dll")]
+        static extern bool FindClose(IntPtr h);
+
+        /// <summary>Le fichier est-il dans un sous-dossier (strict) de la racine ?</summary>
+        public static bool EstSousDossierDe(string dossierFichier, string racine)
+        {
+            string r = racine.TrimEnd('\\') + "\\";
+            return dossierFichier.TrimEnd('\\').Length + 1 > r.Length
+                && (dossierFichier.TrimEnd('\\') + "\\").StartsWith(r, StringComparison.OrdinalIgnoreCase);
+        }
+
         /// <summary>Nom libre dans le dossier : « x.pdf », sinon « x (2).pdf », « x (3).pdf »…</summary>
         public static string NomLibre(string dossier, string nom)
         {

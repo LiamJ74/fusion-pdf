@@ -155,8 +155,41 @@ en: From File Explorer, without opening the app
 fr: Clic droit sur un dossier, puis <Bold>« Afficher d'autres options »</Bold> et <Bold>« Fusionner les PDF de ce dossier »</Bold>. Fusion PDF s'ouvre avec tous les PDF du dossier, déjà triés.
 en: Right-click a folder, then <Bold>“Show more options”</Bold> and <Bold>“Merge the PDFs in this folder”</Bold>. Fusion PDF opens with all the PDFs of the folder, already sorted.
 
-fr: Raccourci : Maj + clic droit affiche directement la commande. Les PDF des sous-dossiers ne sont pas pris.
-en: Shortcut: Shift + right-click shows the command directly. PDFs in subfolders are not included.
+fr: Raccourci : Maj + clic droit affiche directement la commande. Pour prendre aussi les PDF des sous-dossiers, cochez <Bold>« Inclure les sous-dossiers »</Bold> : ils suivent, dossier par dossier, dans l'ordre de l'Explorateur.
+en: Shortcut: Shift + right-click shows the command directly. To also take the PDFs in subfolders, tick <Bold>“Include subfolders”</Bold>: they follow, folder by folder, in File Explorer order.
+
+fr: Prend aussi les PDF des sous-dossiers, dossier par dossier, dans l'ordre de l'Explorateur. Le choix est mémorisé.
+en: Also takes the PDFs in subfolders, folder by folder, in File Explorer order. Your choice is remembered.
+
+fr: Inclure les sous-dossiers
+en: Include subfolders
+
+fr: Le dossier {0} ne contient pas de PDF directement, mais {1} dans ses sous-dossiers.
+en: The folder {0} contains no PDF directly, but {1} in its subfolders.
+
+fr: Cochez « Inclure les sous-dossiers » pour les ajouter.
+en: Tick “Include subfolders” to add them.
+
+fr: Ni directement, ni dans ses sous-dossiers. Dossier : {0}
+en: Neither directly nor in its subfolders. Folder: {0}
+
+fr: {0} depuis les sous-dossiers.
+en: {0} from the subfolders.
+
+fr: Ils sont placés à la fin de la liste, dans l'ordre des dossiers.
+en: They are placed at the end of the list, in folder order.
+
+fr: Aucun PDF dans les sous-dossiers.
+en: No PDF in the subfolders.
+
+fr: {0} de la liste.
+en: {0} from the list.
+
+fr: PDF de sous-dossier retiré
+en: subfolder PDF removed
+
+fr: PDF de sous-dossiers retirés
+en: subfolder PDFs removed
 
 fr: Changer l'ordre
 en: Change the order
@@ -246,9 +279,6 @@ en: Add PDFs
 
 fr: Le dossier {0} ne contient aucun PDF.
 en: The folder {0} contains no PDF.
-
-fr: Seuls les PDF placés directement dans le dossier sont pris, pas ceux des sous-dossiers. Dossier : {0}
-en: Only PDFs placed directly in the folder are taken, not those in subfolders. Folder: {0}
 
 fr: {0} : ce ne sont pas des PDF.
 en: {0}: they are not PDFs.

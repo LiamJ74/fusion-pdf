@@ -60,6 +60,11 @@ namespace FusionPDF
 
         int jetonApercu;
 
+        // Sous-dossiers : choix mémorisé, et dossiers chargés (pour que cocher
+        // ou décocher agisse tout de suite sur la liste).
+        bool sousDossiers;
+        readonly List<string> racines = new List<string>();
+
         // Contrôles
         ListBox liste;
         TextBox txtSortie;
@@ -135,6 +140,11 @@ namespace FusionPDF
             aide = C<FrameworkElement>("Aide");
             aidePanneau = C<FrameworkElement>("AidePanneau");
 
+            // Numéro de version en bas à droite : 1.3.0, lu dans l'assembly (posé par le build).
+            Version v = Assembly.GetExecutingAssembly().GetName().Version;
+            TextBlock txtVersion = C<TextBlock>("TxtVersion");
+            txtVersion.Text = "Fusion PDF " + v.ToString(3);
+            txtVersion.ToolTip = v.ToString();
             C<Image>("ImgLogo").Source = Ressources.Image("FusionPDF.Logo.png");
             try { W.Icon = Ressources.Image("FusionPDF.Icone.ico"); } catch { }
             Ombrer();
@@ -258,6 +268,68 @@ namespace FusionPDF
         }
 
         // =================================================================
+        // Sous-dossiers
+        // =================================================================
+
+        static string LirePreference(string nom)
+        {
+            try
+            {
+                string f = Path.Combine(Path.GetDirectoryName(Journal.Chemin), nom);
+                return File.Exists(f) ? File.ReadAllText(f).Trim() : "";
+            }
+            catch { return ""; }
+        }
+
+        static void EcrirePreference(string nom, string valeur)
+        {
+            try
+            {
+                string f = Path.Combine(Path.GetDirectoryName(Journal.Chemin), nom);
+                Directory.CreateDirectory(Path.GetDirectoryName(f));
+                File.WriteAllText(f, valeur);
+            }
+            catch { }
+        }
+
+        /// <summary>
+        /// Cocher ajoute les PDF des sous-dossiers des dossiers déjà chargés ;
+        /// décocher les retire. Les fichiers ajoutés un par un ne bougent pas.
+        /// </summary>
+        void BasculerSousDossiers(bool oui)
+        {
+            if (oui == sousDossiers) return;
+            sousDossiers = oui;
+            EcrirePreference("sous-dossiers.txt", oui ? "1" : "0");
+            if (occupe || racines.Count == 0) return;
+            MasquerBandeau();
+
+            if (oui)
+            {
+                HashSet<string> deja = new HashSet<string>(elements.Select(e => e.Chemin), StringComparer.OrdinalIgnoreCase);
+                List<ElementPdf> ajoutes = new List<ElementPdf>();
+                foreach (string r in racines)
+                    foreach (string f in Fichiers.PdfDuDossier(r, true))
+                        if (deja.Add(Path.GetFullPath(f))) ajoutes.Add(new ElementPdf(Path.GetFullPath(f)));
+                foreach (ElementPdf e in ajoutes) { elements.Add(e); if (e.Etat == EtatPdf.Lecture) aCompter.Add(e); }
+                if (ajoutes.Count > 0)
+                {
+                    liste.ScrollIntoView(ajoutes[0]);
+                    Information(L("{0} depuis les sous-dossiers.", Pl(ajoutes.Count, "PDF ajouté", "PDF ajoutés")),
+                                L("Ils sont placés à la fin de la liste, dans l'ordre des dossiers."));
+                }
+                else Information(L("Aucun PDF dans les sous-dossiers."), "");
+            }
+            else
+            {
+                List<ElementPdf> retires = elements.Where(e => racines.Any(r => Fichiers.EstSousDossierDe(e.Dossier, r))).ToList();
+                foreach (ElementPdf e in retires) elements.Remove(e);
+                if (retires.Count > 0)
+                    Information(L("{0} de la liste.", Pl(retires.Count, "PDF de sous-dossier retiré", "PDF de sous-dossiers retirés")), "");
+            }
+        }
+
+        // =================================================================
         // Langue : sélecteur FR | EN de l'en-tête
         // =================================================================
 
@@ -319,6 +391,11 @@ namespace FusionPDF
             btnPortail.Click += delegate { OuvrirPortail(); };
             btnFermerBandeau.Click += delegate { MasquerBandeau(); };
             lienAnnuler.Click += delegate { AnnulerRenommage(); };
+            CheckBox chkSous = C<CheckBox>("ChkSousDossiers");
+            sousDossiers = LirePreference("sous-dossiers.txt") == "1";
+            chkSous.IsChecked = sousDossiers;
+            chkSous.Checked += delegate { BasculerSousDossiers(true); };
+            chkSous.Unchecked += delegate { BasculerSousDossiers(false); };
             C<Button>("BtnFr").Click += delegate { ChangerLangue(false); };
             C<Button>("BtnEn").Click += delegate { ChangerLangue(true); };
             MajLangue();
@@ -432,12 +509,9 @@ namespace FusionPDF
                 {
                     if (Directory.Exists(c))
                     {
-                        List<string> pdf = Directory.EnumerateFiles(c)
-                            .Where(f => EstPdf(f)
-                                        && !Fichiers.EstUneSortie(Path.GetFileName(f))
-                                        && (File.GetAttributes(f) & FileAttributes.Hidden) == 0)
-                            .OrderBy(f => Path.GetFileName(f), TriNaturel.Instance)
-                            .ToList();
+                        List<string> pdf = Fichiers.PdfDuDossier(c, sousDossiers);
+                        string racine = Path.GetFullPath(c).TrimEnd('\\');
+                        if (!racines.Contains(racine, StringComparer.OrdinalIgnoreCase)) racines.Add(racine);
                         if (pdf.Count == 0) dossiersVides.Add(c);
                         if (string.IsNullOrEmpty(dossierSortie) && !dossierChoisi && elements.Count == 0 && nouveaux.Count == 0)
                             dossierSortie = c;
@@ -475,8 +549,15 @@ namespace FusionPDF
 
             if (ajoutes.Count == 0 && dossiersVides.Count > 0)
             {
-                Erreur(L("Le dossier {0} ne contient aucun PDF.", Q(NomDossier(dossiersVides[0]))),
-                       L("Seuls les PDF placés directement dans le dossier sont pris, pas ceux des sous-dossiers. Dossier : {0}", dossiersVides[0]));
+                // Rien au premier niveau : y en a-t-il plus bas ? On le dit,
+                // plutôt que de laisser croire que le dossier est vide.
+                int plusBas = sousDossiers ? 0 : Fichiers.PdfDuDossier(dossiersVides[0], true).Count;
+                if (plusBas > 0)
+                    Information(L("Le dossier {0} ne contient pas de PDF directement, mais {1} dans ses sous-dossiers.", Q(NomDossier(dossiersVides[0])), plusBas),
+                                L("Cochez « Inclure les sous-dossiers » pour les ajouter."));
+                else
+                    Erreur(L("Le dossier {0} ne contient aucun PDF.", Q(NomDossier(dossiersVides[0]))),
+                           L("Ni directement, ni dans ses sous-dossiers. Dossier : {0}", dossiersVides[0]));
             }
             else if (ignores > 0)
             {
@@ -871,7 +952,16 @@ namespace FusionPDF
 
         void MajSortieParDefaut()
         {
-            if (!dossierChoisi && elements.Count > 0) dossierSortie = elements[0].Dossier;
+            // Le dossier que l'utilisateur a ouvert, pas le sous-dossier du premier
+            // PDF : avec « Inclure les sous-dossiers », le premier fichier peut
+            // venir d'un sous-dossier.
+            if (!dossierChoisi && elements.Count > 0)
+            {
+                string premier = elements[0].Dossier;
+                string racine = racines.FirstOrDefault(r => string.Equals(premier.TrimEnd('\\'), r, StringComparison.OrdinalIgnoreCase)
+                                                            || Fichiers.EstSousDossierDe(premier, r));
+                dossierSortie = racine ?? premier;
+            }
             if (!nomModifie && !string.IsNullOrEmpty(dossierSortie))
             {
                 majNom = true;

@@ -11,7 +11,8 @@ original files are never modified (unless you ask for them to be renamed).
 
 1. **Add the PDFs.** Drop files or a whole folder into the window, or click
    **Choose a folder** / **Add files**. Only PDFs placed directly in a folder are
-   taken, not those in its subfolders.
+   taken, unless **Include subfolders** is ticked: then those of its subfolders follow,
+   folder by folder, in File Explorer order. The choice is remembered.
 2. **Check the order.** The order of the list is the order of the merged file.
    Click a row to see its first page on the right.
 3. **Click Merge.** The file `_MERGED_<date>.pdf` is created in the folder of the

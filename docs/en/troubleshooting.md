@@ -11,7 +11,7 @@ Nothing is written under the final name when a merge fails.
 | **The file … is password protected** | qpdf cannot open it. Remove it from the list, or open it with its password and save an unprotected copy (Print › *Microsoft Print to PDF*), then add that copy. |
 | **The file … is damaged or is not a real PDF** | Open it to check, remove it from the list, merge again. A slightly damaged PDF is accepted: the final banner says so, and the result is readable. |
 | **The file … is open in another program** / **locked** | Close it in your PDF reader (or the program using it). With *Rename* ticked, no file is renamed until all of them are free. |
-| **The folder … contains no PDF** | Only PDFs placed directly in the folder are taken, not those in subfolders. Right-click the subfolder that holds them. |
+| **The folder … contains no PDF** | By default only PDFs placed directly in the folder are taken. If its subfolders hold some, a blue banner says so: tick **Include subfolders**. A red message means there is no PDF in the folder nor in its subfolders. |
 | **OneDrive could not download …** | Check the connection and that OneDrive is running. Otherwise: right-click the folder › *Always keep on this device*. |
 | **The output file … is open in another program** | Close the previous merged file, or change the output name. |
 | **You are not allowed to write in this folder** | Choose another location with **Save as…**. |

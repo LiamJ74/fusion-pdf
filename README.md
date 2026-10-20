@@ -28,7 +28,7 @@ so there is **no quality loss**, and 150 files merge in seconds.
 
 ## Features
 
-- **Drag and drop** PDFs or whole folders, or right-click a folder in File Explorer:
+- **Drag and drop** PDFs or whole folders — optionally **with their subfolders**, in File Explorer order — or right-click a folder in File Explorer:
   *Merge the PDFs in this folder*.
 - **Reorder** by dragging rows, or with *Move up / Move down*, *Sort by name*
   (natural sort: `page9` before `page10`), *Sort by date*, *Reverse*.

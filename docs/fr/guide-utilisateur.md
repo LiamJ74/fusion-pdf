@@ -12,8 +12,9 @@ les renommer).
 
 1. **Ajoutez les PDF.** Déposez des fichiers ou un dossier entier dans la
    fenêtre, ou cliquez sur **Choisir un dossier** / **Ajouter des fichiers**.
-   Seuls les PDF placés directement dans un dossier sont pris, pas ceux de ses
-   sous-dossiers.
+   Seuls les PDF placés directement dans un dossier sont pris, sauf si **Inclure les
+   sous-dossiers** est coché : ceux des sous-dossiers suivent alors, dossier par dossier,
+   dans l'ordre de l'Explorateur. Le choix est mémorisé.
 2. **Vérifiez l'ordre.** L'ordre de la liste est l'ordre du fichier final.
    Cliquez sur une ligne pour voir sa première page à droite.
 3. **Cliquez sur Fusionner.** Le fichier `_FUSION_<date>.pdf` est créé dans le

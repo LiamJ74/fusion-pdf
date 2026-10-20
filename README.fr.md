@@ -29,7 +29,7 @@ pages sont copiées telles quelles par qpdf : **aucune perte de qualité**, et
 
 ## Fonctionnalités
 
-- **Glisser-déposer** de PDF ou de dossiers entiers, ou clic droit sur un dossier
+- **Glisser-déposer** de PDF ou de dossiers entiers, au besoin **avec leurs sous-dossiers** dans l'ordre de l'Explorateur, ou clic droit sur un dossier
   dans l'Explorateur : *Fusionner les PDF de ce dossier*.
 - **Réordonner** en glissant les lignes, ou avec *Monter / Descendre*, *Trier par
   nom* (tri naturel : `page9` avant `page10`), *Trier par date*, *Inverser*.

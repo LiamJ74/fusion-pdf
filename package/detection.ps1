@@ -20,7 +20,7 @@
 #
 # PowerShell 5.1, ASCII strict, contexte SYSTEME.
 
-$VersionAttendue = '1.2.0.0'
+$VersionAttendue = '1.3.0.0'
 
 $racinePF = $env:ProgramW6432
 if (-not $racinePF) { $racinePF = $env:ProgramFiles }

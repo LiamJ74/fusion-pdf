@@ -8,6 +8,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -187,7 +188,10 @@ namespace FusionPDF
                 {
                     Fenetre f = new Fenetre();
                     Attendu(f.W != null && f.W.Title == "Fusion PDF", "fenêtre non construite");
-                    return "MainWindow.xaml chargé, contrôles retrouvés";
+                    string affichee = ((System.Windows.Controls.TextBlock)f.W.FindName("TxtVersion")).Text;
+                    string attendue = "Fusion PDF " + typeof(Programme).Assembly.GetName().Version.ToString(3);
+                    Attendu(affichee == attendue, "version affichée : '" + affichee + "', attendue '" + attendue + "'");
+                    return "MainWindow.xaml chargé, contrôles retrouvés, version affichée « " + affichee + " »";
                 });
 
                 Verifier("Tri naturel", delegate
@@ -197,6 +201,33 @@ namespace FusionPDF
                     string attendu = "annexe2.pdf annexe10.pdf Page1.pdf page9.pdf page10.pdf page100.pdf";
                     Attendu(obtenu == attendu, obtenu);
                     return obtenu;
+                });
+
+                Verifier("Parcours des sous-dossiers (ordre, cachés, fusions, jonction qui boucle)", delegate
+                {
+                    string r = Path.Combine(tmp, "arbre [x]");
+                    foreach (string sd in new[] { "", "sous2", "sous2\\profond", "sous10", ".cache" }) Directory.CreateDirectory(Path.Combine(r, sd));
+                    foreach (string f in new[] { "b.pdf", "a10.pdf", "a9.pdf", "_FUSION_ancien.pdf", "note.txt",
+                                                 "sous2\\x.pdf", "sous2\\profond\\z.pdf", "sous10\\y.pdf", ".cache\\cache.pdf" })
+                        File.WriteAllText(Path.Combine(r, f), "x");
+                    File.SetAttributes(Path.Combine(r, ".cache"), FileAttributes.Directory | FileAttributes.Hidden);
+
+                    // Jonction sous2\boucle -> racine : sans garde, le parcours tournerait en rond.
+                    string jonction = Path.Combine(r, "sous2\\boucle");
+                    Process pj = Process.Start(new ProcessStartInfo("cmd.exe", "/c mklink /J \"" + jonction + "\" \"" + r + "\"")
+                                               { UseShellExecute = false, CreateNoWindow = true });
+                    pj.WaitForExit(10000);
+                    bool avecJonction = Directory.Exists(jonction);
+
+                    Func<List<string>, string> rel = l => string.Join(" ", l.Select(p => p.Substring(r.Length + 1)));
+                    string plat = rel(Fichiers.PdfDuDossier(r, false));
+                    Attendu(plat == "a9.pdf a10.pdf b.pdf", plat);
+                    string arbre = rel(Fichiers.PdfDuDossier(r, true));
+                    Attendu(arbre == "a9.pdf a10.pdf b.pdf sous2\\x.pdf sous2\\profond\\z.pdf sous10\\y.pdf", arbre);
+                    Attendu(Fichiers.EstSousDossierDe(Path.Combine(r, "sous2"), r) && !Fichiers.EstSousDossierDe(r, r)
+                            && !Fichiers.EstSousDossierDe(r + "-autre", r), "EstSousDossierDe");
+                    if (avecJonction) Directory.Delete(jonction);
+                    return arbre + (avecJonction ? " ; jonction ignorée" : " ; jonction non créée");
                 });
 
                 Verifier("Argument de clic droit sur un lecteur", delegate
