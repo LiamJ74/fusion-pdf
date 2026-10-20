@@ -63,6 +63,21 @@ pages sont copiées telles quelles par qpdf : **aucune perte de qualité**, et
    [guide de déploiement](docs/fr/deploiement.md)).
 3. Déposez vos PDF, vérifiez l'ordre, cliquez sur **Fusionner**.
 
+## Générer l'exe vous-même
+
+Ni Visual Studio ni SDK : le compilateur C# livré avec Windows suffit.
+
+```powershell
+git clone https://github.com/LiamJ74/fusion-pdf.git   # ou « Code > Download ZIP », puis décompresser
+cd fusion-pdf
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\tools\Build-FusionPDF.ps1
+```
+
+L'exécutable est écrit dans **`package\FusionPDF.exe`** (avec `package\logo.png`),
+une fois que le build l'a compilé, a lancé ses autotests et ouvert la fenêtre une
+fois. Si qpdf est installé, les autotests font une vraie fusion. Le pas-à-pas, et
+que faire si ça échoue : [guide de construction](docs/fr/construire.md).
+
 ## Documentation
 
 | | Français | English |

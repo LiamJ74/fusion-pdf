@@ -61,6 +61,21 @@ so there is **no quality loss**, and 150 files merge in seconds.
    `package\install.ps1` as administrator instead (see the [deployment guide](docs/en/deployment.md)).
 3. Drop your PDFs, check the order, click **Merge**.
 
+## Build the .exe yourself
+
+No Visual Studio, no SDK: the C# compiler that ships with Windows is enough.
+
+```powershell
+git clone https://github.com/LiamJ74/fusion-pdf.git   # or "Code > Download ZIP", then unzip
+cd fusion-pdf
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\tools\Build-FusionPDF.ps1
+```
+
+The executable is written to **`package\FusionPDF.exe`** (with `package\logo.png`),
+after the build has compiled it, run its self-tests and opened the window once.
+If qpdf is installed, the self-tests include a real merge. Step by step, and what
+to do if it fails: [building guide](docs/en/building.md).
+
 ## Documentation
 
 | | English | Français |

@@ -2,6 +2,45 @@
 
 [English](../en/building.md) · [Retour au README](../../README.fr.md)
 
+## Pas à pas
+
+1. **Récupérez le code.** Soit `git clone https://github.com/LiamJ74/fusion-pdf.git`, soit
+   sur GitHub : **Code › Download ZIP**, puis décompressez (par exemple dans `C:\Dev\fusion-pdf`).
+   Avec le ZIP, débloquez une fois les fichiers, sinon Windows peut refuser d'exécuter les scripts :
+   ```powershell
+   Get-ChildItem -Recurse C:\Dev\fusion-pdf | Unblock-File
+   ```
+2. **(Facultatif) Installez qpdf** (`winget install QPDF.QPDF`) pour que les
+   autotests fassent aussi une vraie fusion. Le build fonctionne sans.
+3. **Lancez le build**, depuis le dossier du dépôt, dans un PowerShell ordinaire (pas besoin d'être administrateur) :
+   ```powershell
+   powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\tools\Build-FusionPDF.ps1
+   ```
+   Une fenêtre s'ouvre une seconde à la fin : c'est le build qui vérifie que l'application démarre.
+4. **Récupérez le résultat** dans `package\` :
+
+   | Fichier | |
+   |---|---|
+   | `package\FusionPDF.exe` | l'application : lancez-la, ou copiez-la où vous voulez |
+   | `package\logo.png` | l'icône, pour Intune ou le Portail d'entreprise |
+   | `package\install.ps1` … | scripts d'installation pour tout le poste (voir [déploiement](deploiement.md)) |
+
+   Les dernières lignes du build affichent la version et le SHA-256 de l'exécutable.
+
+5. **Changer de version** (facultatif) : modifiez `$VersionAttendue` dans
+   `package\detection.ps1`, puis relancez le build. C'est le seul endroit où la version est fixée.
+
+### Si le build échoue
+
+| Message | Cause, solution |
+|---|---|
+| `csc.exe introuvable` | .NET Framework 4.8 est absent (Windows antérieur à 10 1903). Installez .NET Framework 4.8. |
+| `... n'est pas en UTF-8 avec BOM` | un fichier source a été enregistré sans BOM par un éditeur. Réenregistrez-le en *UTF-8 avec BOM*. |
+| `... texte(s) sans traduction anglaise` | un nouveau texte d'interface n'a pas sa ligne anglaise dans `src\textes.en.txt`. `tools\Get-TextesATraduire.ps1 -Manquantes` les liste. |
+| `... contient N octet(s) non ASCII` | un script de `package\` contient un accent. Les scripts déployés doivent rester en ASCII strict : PowerShell 5.1 les lirait mal. |
+| `autotest : code 1` | un autotest a échoué : le rapport affiché juste au-dessus dit lequel. |
+| `cannot be loaded because running scripts is disabled` | gardez `-ExecutionPolicy Bypass` dans la commande, et débloquez les fichiers (étape 1). |
+
 ## Aucun SDK
 
 Le compilateur est le `csc.exe` livré avec Windows

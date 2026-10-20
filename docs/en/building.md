@@ -2,6 +2,47 @@
 
 [Français](../fr/construire.md) · [Back to README](../../README.md)
 
+## Step by step
+
+1. **Get the code.** Either `git clone https://github.com/LiamJ74/fusion-pdf.git`, or on
+   GitHub: **Code › Download ZIP**, then unzip it (for instance into `C:\Dev\fusion-pdf`).
+   With the ZIP, unblock the files once, otherwise Windows may refuse to run the scripts:
+   ```powershell
+   Get-ChildItem -Recurse C:\Dev\fusion-pdf | Unblock-File
+   ```
+2. **(Optional) Install qpdf** — `winget install QPDF.QPDF` — so that the self-tests
+   also run a real merge. The build works without it.
+3. **Build**, from the repository folder, in an ordinary (non-admin) PowerShell window:
+   ```powershell
+   powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\tools\Build-FusionPDF.ps1
+   ```
+   A window opens for a second at the end: that is the build checking the app starts.
+4. **Get the result** in `package\`:
+
+   | File | |
+   |---|---|
+   | `package\FusionPDF.exe` | the application — run it, or copy it anywhere |
+   | `package\logo.png` | the icon, for Intune or Company Portal |
+   | `package\install.ps1` … | machine-wide install scripts (see [deployment](deployment.md)) |
+
+   The last lines of the build print the version and the SHA-256 of the executable.
+
+5. **Change the version** (optional): edit `$VersionAttendue` in `package\detection.ps1`,
+   then build again. It is the only place the version is set.
+
+### If the build fails
+
+| Message | Cause, fix |
+|---|---|
+| `csc.exe introuvable` | .NET Framework 4.8 is missing (Windows older than 10 1903). Install .NET Framework 4.8. |
+| `... n'est pas en UTF-8 avec BOM` | a source file was saved without BOM by an editor. Save it again as *UTF-8 with BOM*. |
+| `... texte(s) sans traduction anglaise` | a new interface text has no English line in `src\textes.en.txt`. `tools\Get-TextesATraduire.ps1 -Manquantes` lists them. |
+| `... contient N octet(s) non ASCII` | a script of `package\` contains an accent. Deployed scripts must stay strict ASCII: PowerShell 5.1 would misread them. |
+| `autotest : code 1` | a self-test failed: the report printed just above says which one. |
+| `cannot be loaded because running scripts is disabled` | keep `-ExecutionPolicy Bypass` in the command, and unblock the files (step 1). |
+
+The build messages are in French, the language the tool was first written in.
+
 ## No SDK needed
 
 The compiler is the `csc.exe` that ships with Windows
