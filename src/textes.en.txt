@@ -1,0 +1,656 @@
+﻿# Fusion PDF - traduction anglaise de l'interface.
+#
+# Une paire par texte : la ligne « fr: » est le texte exact du code ou du
+# XAML (la clé), la ligne « en: » sa traduction. Un retour à la ligne s'écrit \n.
+# Les textes du XAML gardent leur balisage (<Bold>…</Bold>) et leur
+# échappement XML (&lt; &gt;) : ils sont insérés tels quels avant le chargement.
+#
+# Build-FusionPDF.ps1 refuse de compiler si un texte n'a pas sa traduction
+# (Get-TextesATraduire.ps1 -Manquantes les liste).
+
+# --- XAML : en-tête, zone de dépôt, barre d'outils -----------------------
+fr: Assemblez plusieurs PDF en un seul fichier, dans l'ordre de votre choix.
+en: Combine several PDFs into a single file, in the order you choose.
+
+fr: Mode d'emploi (F1)
+en: How to use (F1)
+
+fr: Aide
+en: Help
+
+fr: Glissez ici des PDF ou un dossier
+en: Drop PDFs or a folder here
+
+fr: Ils s'ajoutent à la liste. L'ordre de la liste est l'ordre de la fusion.
+en: They are added to the list. The order of the list is the order of the merged file.
+
+fr: Ajouter tous les PDF d'un dossier
+en: Add all the PDFs of a folder
+
+fr: Choisir un dossier
+en: Choose a folder
+
+fr: Ajouter un ou plusieurs PDF
+en: Add one or more PDFs
+
+fr: Ajouter des fichiers
+en: Add files
+
+fr: Monter la sélection (Alt+Haut)
+en: Move the selection up (Alt+Up)
+
+fr: Monter
+en: Move up
+
+fr: Descendre la sélection (Alt+Bas)
+en: Move the selection down (Alt+Down)
+
+fr: Descendre
+en: Move down
+
+fr: Tri naturel : page9 avant page10
+en: Natural sort: page9 before page10
+
+fr: Trier par nom
+en: Sort by name
+
+fr: Du plus ancien au plus récent
+en: Oldest first
+
+fr: Trier par date
+en: Sort by date
+
+fr: Inverser l'ordre de la liste
+en: Reverse the order of the list
+
+fr: Inverser
+en: Reverse
+
+fr: Retirer la sélection de la liste (Suppr). Le fichier n'est pas supprimé.
+en: Remove the selection from the list (Del). The file itself is not deleted.
+
+fr: Retirer
+en: Remove
+
+fr: FICHIER
+en: FILE
+
+fr: TAILLE
+en: SIZE
+
+fr: Aucun fichier pour l'instant
+en: No files yet
+
+fr: Glissez des PDF dans la fenêtre, ou cliquez sur « Choisir un dossier ».
+en: Drop PDFs into the window, or click “Choose a folder”.
+
+fr: Glisser une ligne pour la déplacer · Ctrl ou Maj pour en choisir plusieurs
+en: Drag a row to move it · Ctrl or Shift to select several
+
+fr: APERÇU · PREMIÈRE PAGE
+en: PREVIEW · FIRST PAGE
+
+fr: Sélectionnez un fichier pour voir sa première page.
+en: Select a file to see its first page.
+
+# --- XAML : bandeau, pied --------------------------------------------------
+fr: Ouvrir le PDF
+en: Open the PDF
+
+fr: Ouvrir le dossier
+en: Open the folder
+
+fr: Ouvrir le Portail d'entreprise
+en: Open Company Portal
+
+fr: Fermer
+en: Close
+
+fr: Fichier de sortie
+en: Output file
+
+fr: Choisir le dossier et le nom du fichier fusionné
+en: Choose the folder and name of the merged file
+
+fr: Enregistrer sous…
+en: Save as…
+
+fr: Renommer aussi les fichiers sources avec 001_, 002_… dans l'ordre de la liste
+en: Also rename the source files 001_, 002_… in the order of the list
+
+fr: Utile seulement si l'ordre doit rester visible dans SharePoint. Réversible : les anciens noms sont gardés dans un fichier _RENOMMAGE_&lt;date&gt;.csv.
+en: Only useful if the order must stay visible to others, in SharePoint for instance. Reversible: the old names are kept in a _RENAMED_&lt;date&gt;.csv file.
+
+fr: Annuler un renommage…
+en: Undo a renaming…
+
+fr: Fusionner
+en: Merge
+
+# --- XAML : aide intégrée ---------------------------------------------------
+fr: Comment utiliser Fusion PDF
+en: How to use Fusion PDF
+
+fr: Tout tient en trois gestes. Rien n'est modifié dans vos fichiers d'origine.
+en: Three steps, that's all. Your original files are never modified.
+
+fr: Fermer (Échap)
+en: Close (Esc)
+
+fr: Fusionner en trois gestes
+en: Merge in three steps
+
+fr: <Bold>Ajoutez les PDF</Bold> : glissez-les dans la fenêtre, avec un dossier entier si vous voulez, ou cliquez sur « Choisir un dossier ».
+en: <Bold>Add the PDFs</Bold>: drop them into the window, a whole folder if you like, or click “Choose a folder”.
+
+fr: <Bold>Vérifiez l'ordre</Bold> : l'ordre de la liste est l'ordre du fichier final. Cliquez sur une ligne pour voir sa première page à droite.
+en: <Bold>Check the order</Bold>: the order of the list is the order of the final file. Click a row to see its first page on the right.
+
+fr: <Bold>Cliquez sur Fusionner</Bold>. Le fichier _FUSION_&lt;date&gt;.pdf apparaît dans le dossier des fichiers, avec les boutons « Ouvrir le PDF » et « Ouvrir le dossier ».
+en: <Bold>Click Merge</Bold>. The file _MERGED_&lt;date&gt;.pdf appears in the folder of the files, with the “Open the PDF” and “Open the folder” buttons.
+
+fr: Depuis l'Explorateur, sans ouvrir l'application
+en: From File Explorer, without opening the app
+
+fr: Clic droit sur un dossier, puis <Bold>« Afficher d'autres options »</Bold> et <Bold>« Fusionner les PDF de ce dossier »</Bold>. Fusion PDF s'ouvre avec tous les PDF du dossier, déjà triés.
+en: Right-click a folder, then <Bold>“Show more options”</Bold> and <Bold>“Merge the PDFs in this folder”</Bold>. Fusion PDF opens with all the PDFs of the folder, already sorted.
+
+fr: Raccourci : Maj + clic droit affiche directement la commande. Les PDF des sous-dossiers ne sont pas pris.
+en: Shortcut: Shift + right-click shows the command directly. PDFs in subfolders are not included.
+
+fr: Changer l'ordre
+en: Change the order
+
+fr: • <Bold>Glissez une ligne</Bold> à sa place : un trait bleu montre où elle va. Ctrl ou Maj pour en déplacer plusieurs.
+en: • <Bold>Drag a row</Bold> to its place: a blue line shows where it goes. Ctrl or Shift to move several.
+
+fr: • <Bold>Monter</Bold> et <Bold>Descendre</Bold> (Alt + flèches) déplacent la sélection d'un cran.
+en: • <Bold>Move up</Bold> and <Bold>Move down</Bold> (Alt + arrows) move the selection by one row.
+
+fr: • <Bold>Trier par nom</Bold> range « page9 » avant « page10 », comme l'Explorateur : inutile de numéroter vos fichiers.
+en: • <Bold>Sort by name</Bold> puts “page9” before “page10”, just like File Explorer: no need to number your files.
+
+fr: • <Bold>Retirer</Bold> (Suppr) enlève la ligne de la liste, sans supprimer le fichier.
+en: • <Bold>Remove</Bold> (Del) takes the row out of the list, without deleting the file.
+
+fr: Renommer les fichiers 001_, 002_…
+en: Renaming files 001_, 002_…
+
+fr: Seulement si l'ordre doit rester visible pour d'autres, dans SharePoint par exemple. Les anciens noms sont gardés dans un fichier _RENOMMAGE_&lt;date&gt;.csv : le lien <Bold>« Annuler un renommage… »</Bold> les rétablit.
+en: Only if the order must stay visible to others, in SharePoint for instance. The old names are kept in a _RENAMED_&lt;date&gt;.csv file: the <Bold>“Undo a renaming…”</Bold> link restores them.
+
+fr: Fichiers OneDrive « En ligne seulement »
+en: OneDrive “Online-only” files
+
+fr: Rien à faire : ils sont téléchargés automatiquement au moment de la fusion. Il faut seulement être connecté à Internet.
+en: Nothing to do: they are downloaded automatically when you merge. You just need an Internet connection.
+
+fr: Si un message apparaît
+en: If a message appears
+
+fr: • <Bold>Protégé par un mot de passe</Bold> : retirez le fichier, ou enregistrez-en une copie sans protection (Imprimer › Microsoft Print to PDF).
+en: • <Bold>Password protected</Bold>: remove the file, or save an unprotected copy of it (Print › Microsoft Print to PDF).
+
+fr: • <Bold>Ouvert dans un autre programme</Bold> : fermez-le dans votre lecteur PDF, puis relancez.
+en: • <Bold>Open in another program</Bold>: close it in your PDF reader, then try again.
+
+fr: • <Bold>Endommagé ou illisible</Bold> : ouvrez-le pour vérifier, puis retirez-le de la liste.
+en: • <Bold>Damaged or unreadable</Bold>: open it to check, then remove it from the list.
+
+fr: • <Bold>qpdf n'est pas installé</Bold> : installez-le depuis le Portail d'entreprise, puis cliquez de nouveau sur Fusionner.
+en: • <Bold>qpdf is not installed</Bold>: install it (Company Portal, or winget install QPDF.QPDF), then click Merge again.
+
+fr: Langue
+en: Language
+
+fr: Les boutons <Bold>FR</Bold> et <Bold>EN</Bold>, en haut à droite, changent la langue. Le choix est mémorisé, et la liste en cours est gardée.
+en: The <Bold>FR</Bold> and <Bold>EN</Bold> buttons, top right, switch the language. Your choice is remembered, and the current list is kept.
+
+fr: Un problème persiste ? Écrivez au support IT.
+en: Still stuck? Contact your IT support.
+
+fr: Ouvrir la FAQ complète (PDF)
+en: Open the full FAQ (PDF)
+
+fr: J'ai compris
+en: Got it
+
+# --- App.cs ----------------------------------------------------------------
+fr: Une erreur inattendue s'est produite. L'application reste ouverte.\n\nLe détail technique est enregistré dans le journal :\n{0}
+en: An unexpected error occurred. The application stays open.\n\nThe technical details are recorded in the log:\n{0}
+
+fr: Fusion PDF n'a pas pu démarrer.\n\nLe détail technique est enregistré dans le journal :\n{0}
+en: Fusion PDF could not start.\n\nThe technical details are recorded in the log:\n{0}
+
+# --- Fenetre.cs ------------------------------------------------------------
+fr: La liste est vide.
+en: The list is empty.
+
+fr: …
+en: …
+
+fr: Attendez la fin de la fusion pour changer de langue.
+en: Wait for the merge to finish before changing the language.
+
+fr: Une fusion est en cours. Fermer quand même ?
+en: A merge is in progress. Close anyway?
+
+fr: Choisir le dossier qui contient les PDF
+en: Choose the folder that contains the PDFs
+
+fr: Choisissez un PDF du dossier
+en: Choose a PDF in the folder
+
+fr: Ajouter des PDF
+en: Add PDFs
+
+fr: Le dossier {0} ne contient aucun PDF.
+en: The folder {0} contains no PDF.
+
+fr: Seuls les PDF placés directement dans le dossier sont pris, pas ceux des sous-dossiers. Dossier : {0}
+en: Only PDFs placed directly in the folder are taken, not those in subfolders. Folder: {0}
+
+fr: {0} : ce ne sont pas des PDF.
+en: {0}: they are not PDFs.
+
+fr: {0} à la liste.
+en: {0} to the list.
+
+fr: Aucun PDF n'a été ajouté.
+en: No PDF was added.
+
+fr: « {0} »
+en: “{0}”
+
+fr: Liste vide
+en: Empty list
+
+fr: Ajoutez au moins deux PDF
+en: Add at least two PDFs
+
+fr: (+ {0} à lire)
+en: (+ {0} to read)
+
+fr: {0} d'abord
+en: {0} first
+
+fr: {0} dans l'ordre affiché
+en: {0} in the order shown
+
+fr: Déposez pour ajouter à la liste
+en: Drop to add to the list
+
+fr: Fichier en ligne seulement : il sera téléchargé depuis OneDrive au moment de la fusion. L'aperçu s'affichera ensuite.
+en: Online-only file: it will be downloaded from OneDrive when you merge. The preview will appear then.
+
+fr: Fichier protégé par un mot de passe : il ne pourra pas être fusionné.
+en: Password-protected file: it cannot be merged.
+
+fr: Fichier illisible : il est endommagé ou ce n'est pas un vrai PDF.
+en: Unreadable file: it is damaged or not a real PDF.
+
+fr: Fichier volumineux : pas d'aperçu, la fusion n'est pas concernée.
+en: Large file: no preview, merging is not affected.
+
+fr: Préparation de l'aperçu…
+en: Preparing the preview…
+
+fr: Aperçu indisponible pour ce fichier. La fusion n'est pas concernée.
+en: No preview for this file. Merging is not affected.
+
+fr: Enregistré dans le dossier des fichiers sources.
+en: Saved in the folder of the source files.
+
+fr: Enregistré dans : {0}
+en: Saved in: {0}
+
+fr: Enregistrer le PDF fusionné
+en: Save the merged PDF
+
+fr: Le nom du fichier de sortie est vide.
+en: The output file name is empty.
+
+fr: Indiquez un nom, par exemple {0}.
+en: Enter a name, for example {0}.
+
+fr: Le nom du fichier de sortie n'est pas valide.
+en: The output file name is not valid.
+
+fr: Ces caractères ne sont pas permis : {0}
+en: These characters are not allowed: {0}
+
+fr: Le dossier de destination n'existe plus.
+en: The destination folder no longer exists.
+
+fr: Choisissez un emplacement avec « Enregistrer sous… ».
+en: Choose a location with “Save as…”.
+
+fr: Il n'y a qu'un seul fichier dans la liste.
+en: There is only one file in the list.
+
+fr: Ajoutez au moins un autre PDF à fusionner.
+en: Add at least one more PDF to merge.
+
+fr: Le renommage n'est possible que si tous les fichiers sont dans le même dossier.
+en: Renaming is only possible when all the files are in the same folder.
+
+fr: Décochez « Renommer », ou fusionnez un dossier à la fois.
+en: Untick “Rename”, or merge one folder at a time.
+
+fr: Le fichier de sortie est aussi dans la liste.
+en: The output file is also in the list.
+
+fr: Choisissez un autre nom de fichier de sortie.
+en: Choose another output file name.
+
+fr: Le fichier {0} existe déjà.\n\nLe remplacer ?
+en: The file {0} already exists.\n\nReplace it?
+
+fr: Une erreur inattendue a interrompu la fusion.
+en: An unexpected error stopped the merge.
+
+fr: Le détail technique est enregistré dans le journal : {0}
+en: The technical details are recorded in the log: {0}
+
+fr: Préparation…
+en: Preparing…
+
+fr: Fusion en cours…
+en: Merging…
+
+fr: Choisir le journal de renommage à annuler
+en: Choose the renaming log to undo
+
+fr: Journal de renommage
+en: Renaming log
+
+fr: Impossible de lire ce journal.
+en: This log cannot be read.
+
+fr: Rien à annuler.
+en: Nothing to undo.
+
+fr: Les fichiers de ce journal ont déjà leur nom d'origine, ou ne sont plus dans le dossier.
+en: The files of this log already have their original names, or are no longer in the folder.
+
+fr: Rendre leur nom d'origine à {0} dans {1} ?
+en: Give back their original names to {0} in {1}?
+
+fr: Retour aux noms d'origine…
+en: Restoring the original names…
+
+fr: L'annulation du renommage a échoué.
+en: Undoing the renaming failed.
+
+fr: Dossier : {0}
+en: Folder: {0}
+
+fr: qpdf {0} prêt
+en: qpdf {0} ready
+
+fr: qpdf absent
+en: qpdf missing
+
+fr: qpdf est le moteur de fusion. Il s'installe depuis le Portail d'entreprise.
+en: qpdf is the merge engine. Install it from Company Portal, or with: winget install QPDF.QPDF
+
+fr: qpdf, le moteur de fusion, n'est pas installé sur ce poste.
+en: qpdf, the merge engine, is not installed on this computer.
+
+fr: Ouvrez le Portail d'entreprise et installez qpdf. Ensuite, cliquez simplement sur Fusionner : inutile de rouvrir l'application.
+en: Install qpdf (Company Portal, or winget install QPDF.QPDF). Then just click Merge: no need to reopen the application.
+
+fr: {0} dans {1}.
+en: {0} in {1}.
+
+fr: Attention : {0} attendues, {1} relues.
+en: Warning: {0} expected, {1} read back.
+
+fr: qpdf a signalé qu'un ou plusieurs fichiers sources sont légèrement abîmés ; le résultat reste lisible.
+en: qpdf reported that one or more source files are slightly damaged; the result is still readable.
+
+fr: {0} ; anciens noms dans {1}.
+en: {0}; old names in {1}.
+
+fr: Terminé : {0} ({1})
+en: Done: {0} ({1})
+
+fr: Mais le renommage n'a pas eu lieu : {0} {1}
+en: But the renaming did not happen: {0} {1}
+
+fr: Impossible d'ouvrir le dossier.
+en: The folder cannot be opened.
+
+fr: Aucun lecteur PDF n'a pu ouvrir le fichier.
+en: No PDF reader could open the file.
+
+fr: Le fichier est ici : {0}
+en: The file is here: {0}
+
+fr: Le Portail d'entreprise n'a pas pu s'ouvrir.
+en: Company Portal could not be opened.
+
+fr: Cherchez « Portail d'entreprise » dans le menu Démarrer, puis installez qpdf.
+en: Look for “Company Portal” in the Start menu, then install qpdf.
+
+# --- mots comptés (Pl) -----------------------------------------------------
+fr: élément ignoré
+en: item ignored
+
+fr: éléments ignorés
+en: items ignored
+
+fr: PDF ajouté
+en: PDF added
+
+fr: PDF ajoutés
+en: PDFs added
+
+fr: fichier
+en: file
+
+fr: fichiers
+en: files
+
+fr: fichier sera téléchargé
+en: file will be downloaded
+
+fr: fichiers seront téléchargés
+en: files will be downloaded
+
+fr: fichier a retrouvé son nom d'origine.
+en: file got its original name back.
+
+fr: fichiers ont retrouvé leur nom d'origine.
+en: files got their original names back.
+
+fr: fichier fusionné
+en: file merged
+
+fr: fichiers fusionnés
+en: files merged
+
+fr: fichier renommé
+en: file renamed
+
+fr: fichiers renommés
+en: files renamed
+
+fr: page
+en: page
+
+fr: pages
+en: pages
+
+# --- Fusion.cs -------------------------------------------------------------
+fr: modifié le {0:dd/MM/yyyy 'à' HH:mm}
+en: modified {0:MMM d, yyyy 'at' h:mm tt}
+
+fr: En ligne seulement
+en: Online only
+
+fr: Protégé par mot de passe
+en: Password protected
+
+fr: Illisible
+en: Unreadable
+
+fr: Ouvert ailleurs
+en: Open elsewhere
+
+fr: Introuvable
+en: Not found
+
+fr: Vérification de {0}
+en: Checking {0}
+
+fr: Le fichier {0} est introuvable.
+en: The file {0} cannot be found.
+
+fr: Il a peut-être été déplacé, renommé ou supprimé. Retirez-le de la liste, puis relancez la fusion.
+en: It may have been moved, renamed or deleted. Remove it from the list, then merge again.
+
+fr: Téléchargement depuis OneDrive : {0}
+en: Downloading from OneDrive: {0}
+
+fr: OneDrive n'a pas pu télécharger {0}.
+en: OneDrive could not download {0}.
+
+fr: Vérifiez la connexion à Internet et que OneDrive est bien démarré, puis relancez. Sinon : clic droit sur le dossier, puis « Toujours conserver sur cet appareil ».
+en: Check the Internet connection and that OneDrive is running, then try again. Otherwise: right-click the folder, then “Always keep on this device”.
+
+fr: Le fichier {0} est verrouillé par un autre programme.
+en: The file {0} is locked by another program.
+
+fr: Fermez le programme qui l'utilise, puis relancez la fusion.
+en: Close the program that uses it, then merge again.
+
+fr: Le fichier {0} est ouvert dans un autre programme.
+en: The file {0} is open in another program.
+
+fr: Il ne pourra pas être renommé. Fermez-le (par exemple dans votre lecteur PDF), ou décochez « Renommer », puis relancez.
+en: It cannot be renamed. Close it (in your PDF reader, for example), or untick “Rename”, then try again.
+
+fr: Le fichier {0} est protégé par un mot de passe.
+en: The file {0} is password protected.
+
+fr: qpdf ne peut pas l'ouvrir. Retirez-le de la liste, ou ouvrez-le avec son mot de passe et enregistrez-en une copie sans protection (Imprimer > Microsoft Print to PDF), puis relancez.
+en: qpdf cannot open it. Remove it from the list, or open it with its password and save an unprotected copy (Print > Microsoft Print to PDF), then try again.
+
+fr: Le fichier {0} est endommagé ou n'est pas un vrai PDF.
+en: The file {0} is damaged or is not a real PDF.
+
+fr: Ouvrez-le pour vérifier. Retirez-le de la liste, puis relancez la fusion.
+en: Open it to check. Remove it from the list, then merge again.
+
+fr: Fusion de {0} en cours…
+en: Merging {0}…
+
+fr: qpdf n'a produit aucun fichier.
+en: qpdf produced no file.
+
+fr: Le détail technique est dans le journal : {0}
+en: The technical details are in the log: {0}
+
+fr: Fermez-le (par exemple dans votre lecteur PDF), ou changez le nom du fichier de sortie, puis relancez.
+en: Close it (in your PDF reader, for example), or change the output file name, then try again.
+
+fr: Impossible d'enregistrer {0}.
+en: {0} cannot be saved.
+
+fr: Vous n'avez pas le droit d'écrire dans ce dossier. Choisissez un autre emplacement avec « Enregistrer sous… ».
+en: You are not allowed to write in this folder. Choose another location with “Save as…”.
+
+fr: Relecture du résultat…
+en: Reading the result back…
+
+fr: Le fichier produit n'a pas pu être relu : il a été supprimé.
+en: The output file could not be read back: it has been deleted.
+
+fr: Renommage des fichiers sources…
+en: Renaming the source files…
+
+fr: Le renommage a échoué.
+en: The renaming failed.
+
+fr: Terminé
+en: Done
+
+fr: La fusion a été interrompue : elle durait depuis plus de 30 minutes.
+en: The merge was stopped: it had been running for more than 30 minutes.
+
+fr: Essayez avec moins de fichiers à la fois. Le détail technique est dans le journal : {0}
+en: Try with fewer files at a time. The technical details are in the log: {0}
+
+fr: Retirez-le de la liste, ou enregistrez-en une copie sans protection, puis relancez.
+en: Remove it from the list, or save an unprotected copy, then try again.
+
+fr: Le fichier {0} n'a pas pu être lu par qpdf.
+en: qpdf could not read the file {0}.
+
+fr: Il est probablement endommagé. Retirez-le de la liste, puis relancez la fusion.
+en: It is probably damaged. Remove it from the list, then merge again.
+
+fr: Impossible d'écrire le fichier fusionné dans ce dossier.
+en: The merged file cannot be written to this folder.
+
+fr: Vérifiez l'espace disque et vos droits sur le dossier, ou choisissez un autre emplacement avec « Enregistrer sous… ».
+en: Check the disk space and your rights on the folder, or choose another location with “Save as…”.
+
+fr: qpdf a refusé la fusion (code {0}).
+en: qpdf refused the merge (code {0}).
+
+# --- Moteur.cs -------------------------------------------------------------
+fr: o
+en: B
+
+fr: Ko
+en: KB
+
+fr: Mo
+en: MB
+
+fr: Go
+en: GB
+
+fr: {0:dd/MM/yyyy HH:mm}
+en: {0:MMM d, yyyy h:mm tt}
+
+fr: Journal de renommage vide.
+en: Empty renaming log.
+
+fr: Le fichier choisi ne contient aucune ligne.
+en: The chosen file contains no lines.
+
+fr: Ce fichier n'est pas un journal de renommage.
+en: This file is not a renaming log.
+
+fr: Choisissez un fichier {0}<date>.csv produit par Fusion PDF.
+en: Choose a {0}<date>.csv file produced by Fusion PDF.
+
+fr: Fichier introuvable : {0}.
+en: File not found: {0}.
+
+fr: Il a été déplacé ou renommé entre-temps. Aucun fichier n'a été renommé.
+en: It was moved or renamed in the meantime. No file has been renamed.
+
+fr: Un fichier {0} existe déjà dans le dossier.
+en: A file {0} already exists in the folder.
+
+fr: Le renommage l'aurait écrasé : aucun fichier n'a été renommé.
+en: The renaming would have overwritten it: no file has been renamed.
+
+fr: {0} est ouvert dans un autre programme.
+en: {0} is open in another program.
+
+fr: Fermez-le (par exemple dans votre lecteur PDF), puis réessayez. Aucun fichier n'a été renommé.
+en: Close it (in your PDF reader, for example), then try again. No file has been renamed.
+
+fr: Le renommage a échoué, et {0} fichier(s) n'ont pas pu reprendre leur nom.
+en: The renaming failed, and {0} file(s) could not get their name back.
+
+fr: Fichiers concernés : {0}. Le journal de renommage du dossier donne les anciens noms.
+en: Files concerned: {0}. The renaming log in the folder lists the old names.
+
+fr: Tous les fichiers ont retrouvé leur nom d'origine. Cause : {0}
+en: All the files got their original names back. Cause: {0}

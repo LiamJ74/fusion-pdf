@@ -1,0 +1,16 @@
+Fusion PDF
+Copyright 2026 Fusion PDF contributors
+
+This product is licensed under the Apache License, Version 2.0 (see LICENSE).
+
+Fusion PDF is an independent, unofficial graphical front-end. It is not
+affiliated with, endorsed by, or maintained by the qpdf project.
+
+At run time, Fusion PDF calls the qpdf command-line program, which is NOT
+included in this repository or in its releases and must be installed
+separately (for instance: winget install QPDF.QPDF).
+  qpdf - https://github.com/qpdf/qpdf
+  Copyright Jay Berkenbilt and contributors
+  Licensed under the Apache License, Version 2.0
+
+The first-page preview uses the Windows.Data.Pdf API provided by Windows.

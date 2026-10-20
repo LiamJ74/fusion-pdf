@@ -1,0 +1,6 @@
+# Produits du build : publies en release, pas dans le depot.
+package/FusionPDF.exe
+package/logo.png
+package/FAQ Fusion PDF.pdf
+dist/
+*.intunewin
