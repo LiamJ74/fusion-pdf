@@ -29,6 +29,7 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\install.ps1
 | Menu Démarrer | `C:\ProgramData\Microsoft\Windows\Start Menu\Programs\Fusion PDF.lnk` |
 | Clic droit sur un dossier | `HKLM\SOFTWARE\Classes\Directory\shell\FusionPDF` (`"%1"`) |
 | Clic droit dans un dossier | `HKLM\SOFTWARE\Classes\Directory\Background\shell\FusionPDF` (`"%V"`) |
+| Idem, avec les sous-dossiers | `…\Directory\shell\FusionPDFSousDossiers` et `…\Directory\Background\shell\FusionPDFSousDossiers` (`--sous-dossiers "%1"` / `"%V"`) |
 | Journal | `C:\ProgramData\FusionPDF\FusionPDF-install.log` (ou `%LOCALAPPDATA%\FusionPDF\` sans droits administrateur) |
 
 Le libellé du clic droit suit la langue d'installation de Windows. Le script
@@ -119,6 +120,7 @@ toucher à une application existante du même nom.
 ```
 FusionPDF.exe                         fenêtre vide
 FusionPDF.exe "<dossier>"             fenêtre remplie avec les PDF du dossier
+FusionPDF.exe --sous-dossiers "<dossier>"  idem, avec toute l'arborescence (préférence inchangée)
 FusionPDF.exe "<a.pdf>" "<b.pdf>"     fenêtre remplie avec ces fichiers, dans cet ordre
 FusionPDF.exe --lang fr|en ...        impose la langue
 FusionPDF.exe --autotest <rapport>    contrôles sans fenêtre (utilisé par le build)

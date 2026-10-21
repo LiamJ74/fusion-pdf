@@ -48,8 +48,6 @@ namespace FusionPDF
         // Fichier de sortie
         string dossierSortie;
         bool dossierChoisi;      // fixé par « Enregistrer sous… »
-        bool nomModifie;         // l'utilisateur a tapé un nom
-        bool majNom;             // écriture du nom par le programme
         string derniereSortie;
 
         // Glisser-déposer interne
@@ -73,7 +71,8 @@ namespace FusionPDF
                btnInverser, btnRetirer, btnEnregistrerSous, btnOuvrirPdf, btnOuvrirDossier, btnPortail, btnFermerBandeau;
         Hyperlink lienAnnuler;
         TextBlock txtResume, txtDossierSortie, txtQpdf, txtProgres, txtPourcent, txtApercuVide, txtApercuNom,
-                  txtApercuInfo, icoApercu, bandeauIcone, bandeauTitre, bandeauTexte, txtAideFusion, txtZone;
+                  txtApercuInfo, icoApercu, bandeauIcone, bandeauTitre, bandeauTexte, txtAideFusion, txtZone,
+                  txtNomVide, txtSuffixeSortie;
         Border bandeau, pastilleQpdf, cadrePage;
         Ellipse pointQpdf;
         Rectangle zoneCadre;
@@ -93,6 +92,8 @@ namespace FusionPDF
 
             liste = C<ListBox>("Liste");
             txtSortie = C<TextBox>("TxtSortie");
+            txtNomVide = C<TextBlock>("TxtNomVide");
+            txtSuffixeSortie = C<TextBlock>("TxtSuffixeSortie");
             chkRenommer = C<CheckBox>("ChkRenommer");
             btnFusionner = C<Button>("BtnFusionner");
             contenuFusionner = btnFusionner.Content;
@@ -271,6 +272,13 @@ namespace FusionPDF
         // Sous-dossiers
         // =================================================================
 
+        /// <summary>Le dossier chargé qui contient ce dossier (lui-même ou un parent), ou null.</summary>
+        string RacineDe(string dossier)
+        {
+            return racines.FirstOrDefault(r => string.Equals(dossier.TrimEnd('\\'), r, StringComparison.OrdinalIgnoreCase)
+                                                || Fichiers.EstSousDossierDe(dossier, r));
+        }
+
         static string LirePreference(string nom)
         {
             try
@@ -298,28 +306,13 @@ namespace FusionPDF
         /// </summary>
         void BasculerSousDossiers(bool oui)
         {
-            if (oui == sousDossiers) return;
+            if (caseParProgramme || oui == sousDossiers) return;
             sousDossiers = oui;
             EcrirePreference("sous-dossiers.txt", oui ? "1" : "0");
             if (occupe || racines.Count == 0) return;
             MasquerBandeau();
 
-            if (oui)
-            {
-                HashSet<string> deja = new HashSet<string>(elements.Select(e => e.Chemin), StringComparer.OrdinalIgnoreCase);
-                List<ElementPdf> ajoutes = new List<ElementPdf>();
-                foreach (string r in racines)
-                    foreach (string f in Fichiers.PdfDuDossier(r, true))
-                        if (deja.Add(Path.GetFullPath(f))) ajoutes.Add(new ElementPdf(Path.GetFullPath(f)));
-                foreach (ElementPdf e in ajoutes) { elements.Add(e); if (e.Etat == EtatPdf.Lecture) aCompter.Add(e); }
-                if (ajoutes.Count > 0)
-                {
-                    liste.ScrollIntoView(ajoutes[0]);
-                    Information(L("{0} depuis les sous-dossiers.", Pl(ajoutes.Count, "PDF ajouté", "PDF ajoutés")),
-                                L("Ils sont placés à la fin de la liste, dans l'ordre des dossiers."));
-                }
-                else Information(L("Aucun PDF dans les sous-dossiers."), "");
-            }
+            if (oui) InsererSousDossiers();
             else
             {
                 List<ElementPdf> retires = elements.Where(e => racines.Any(r => Fichiers.EstSousDossierDe(e.Dossier, r))).ToList();
@@ -327,6 +320,67 @@ namespace FusionPDF
                 if (retires.Count > 0)
                     Information(L("{0} de la liste.", Pl(retires.Count, "PDF de sous-dossier retiré", "PDF de sous-dossiers retirés")), "");
             }
+        }
+
+        void InsererSousDossiers()
+        {
+            {
+                // Chaque dossier chargé est RECONSTRUIT dans l'ordre de
+                // l'Explorateur, à la place de son bloc dans la liste : ses
+                // sous-dossiers d'abord, puis ses PDF. Les fichiers ajoutés à part,
+                // hors de ces dossiers, gardent leur place.
+                Dictionary<string, ElementPdf> existants = elements.ToDictionary(e => e.Chemin, StringComparer.OrdinalIgnoreCase);
+                List<ElementPdf> nouvelle = new List<ElementPdf>();
+                HashSet<string> faits = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                HashSet<string> places = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                List<ElementPdf> ajoutes = new List<ElementPdf>();
+                Action<string> poserArbre = delegate(string r)
+                {
+                    if (!faits.Add(r)) return;
+                    foreach (string f in Fichiers.PdfDuDossier(r, true))
+                    {
+                        string c = Path.GetFullPath(f);
+                        if (!places.Add(c)) continue;
+                        ElementPdf e;
+                        if (!existants.TryGetValue(c, out e)) { e = new ElementPdf(c); ajoutes.Add(e); }
+                        nouvelle.Add(e);
+                    }
+                };
+                foreach (ElementPdf e in elements)
+                {
+                    string r = RacineDe(e.Dossier);
+                    if (r != null) poserArbre(r);
+                    else if (places.Add(e.Chemin)) nouvelle.Add(e);
+                }
+                foreach (string r in racines) poserArbre(r);   // dossiers sans PDF à leur niveau
+
+                List<ElementPdf> sel = Selection();
+                elements.Clear();
+                foreach (ElementPdf e in nouvelle) elements.Add(e);
+                foreach (ElementPdf e in ajoutes) if (e.Etat == EtatPdf.Lecture) aCompter.Add(e);
+                Reselectionner(sel.Where(e => elements.Contains(e)).ToList());
+                if (ajoutes.Count > 0)
+                {
+                    liste.ScrollIntoView(ajoutes[0]);
+                    Information(L("{0} depuis les sous-dossiers.", Pl(ajoutes.Count, "PDF ajouté", "PDF ajoutés")),
+                                L("La liste suit l'ordre de l'Explorateur : à chaque niveau, les sous-dossiers d'abord, puis les PDF du dossier."));
+                }
+                else Information(L("Aucun PDF dans les sous-dossiers."), "");
+            }
+        }
+
+        /// <summary>
+        /// Pour l'autotest : charge les chemins case décochée, puis coche la case
+        /// comme l'utilisateur, sans toucher à sa préférence mémorisée. Rend
+        /// l'ordre de la liste.
+        /// </summary>
+        internal List<string> EssaiCocherApresChargement(IEnumerable<string> chemins)
+        {
+            sousDossiers = false;
+            Ajouter(chemins, -1);
+            sousDossiers = true;
+            InsererSousDossiers();
+            return elements.Select(e => e.Chemin).ToList();
         }
 
         // =================================================================
@@ -380,7 +434,9 @@ namespace FusionPDF
             btnFichiers.Click += delegate { ChoisirFichiers(); };
             btnMonter.Click += delegate { Deplacer(-1); };
             btnDescendre.Click += delegate { Deplacer(1); };
-            btnTriNom.Click += delegate { Reordonner(elements.OrderBy(e => e.Nom, TriNaturel.Instance).ThenBy(e => e.Chemin, TriNaturel.Instance)); };
+            // Ordre de l'arborescence : identique au tri naturel des noms dans un
+            // seul dossier, et juste avec des sous-dossiers (dossier par dossier).
+            btnTriNom.Click += delegate { Reordonner(elements.OrderBy(e => e.Chemin, TriArbre.Instance)); };
             btnTriDate.Click += delegate { Reordonner(elements.OrderBy(e => e.Date).ThenBy(e => e.Nom, TriNaturel.Instance)); };
             btnInverser.Click += delegate { Reordonner(elements.Reverse()); };
             btnRetirer.Click += delegate { Retirer(); };
@@ -407,7 +463,8 @@ namespace FusionPDF
             btnFaq.Visibility = File.Exists(CheminFaq) ? Visibility.Visible : Visibility.Collapsed;
             btnFaq.Click += delegate { Ouvrir(CheminFaq, false); };
 
-            txtSortie.TextChanged += delegate { if (!majNom) nomModifie = true; };
+            txtSortie.TextChanged += delegate { MajNomSortie(); MajResume(); };
+            MajNomSortie();
             liste.SelectionChanged += delegate { MajBoutons(); AfficherApercu(liste.SelectedItem as ElementPdf); };
 
             liste.PreviewMouseLeftButtonDown += Liste_Presse;
@@ -446,12 +503,26 @@ namespace FusionPDF
         // Ajout de fichiers
         // =================================================================
 
-        /// <summary>Point d'entrée du clic droit et de la ligne de commande.</summary>
-        public void Charger(IEnumerable<string> chemins)
+        /// <summary>
+        /// Point d'entrée du clic droit et de la ligne de commande.
+        /// avecSousDossiers : second clic droit « … et de ses sous-dossiers »
+        /// (--sous-dossiers). Vaut pour CE chargement : la case s'affiche cochée,
+        /// mais la préférence mémorisée de l'utilisateur ne change pas.
+        /// </summary>
+        public void Charger(IEnumerable<string> chemins, bool avecSousDossiers)
         {
             List<string> l = chemins.Where(c => !string.IsNullOrWhiteSpace(c)).ToList();
+            if (avecSousDossiers && !sousDossiers)
+            {
+                sousDossiers = true;
+                caseParProgramme = true;
+                C<CheckBox>("ChkSousDossiers").IsChecked = true;
+                caseParProgramme = false;
+            }
             if (l.Count > 0) Ajouter(l, -1);
         }
+
+        bool caseParProgramme;
 
         void ChoisirDossier()
         {
@@ -696,7 +767,9 @@ namespace FusionPDF
             int enLigne = elements.Count(e => e.Etat == EtatPdf.EnLigne);
             txtAideFusion.Text = enLigne > 0
                 ? L("{0} d'abord", Pl(enLigne, "fichier sera téléchargé", "fichiers seront téléchargés"))
-                : (elements.Count < 2 ? L("Ajoutez au moins deux PDF") : L("{0} dans l'ordre affiché", Pl(elements.Count, "fichier", "fichiers")));
+                : elements.Count < 2 ? L("Ajoutez au moins deux PDF")
+                : Fichiers.NomSaisi(txtSortie.Text).Length == 0 ? L("Donnez d'abord un nom au fichier")
+                : L("{0} dans l'ordre affiché", Pl(elements.Count, "fichier", "fichiers"));
         }
 
         // =================================================================
@@ -962,16 +1035,39 @@ namespace FusionPDF
                                                             || Fichiers.EstSousDossierDe(premier, r));
                 dossierSortie = racine ?? premier;
             }
-            if (!nomModifie && !string.IsNullOrEmpty(dossierSortie))
-            {
-                majNom = true;
-                string nom = Fichiers.PrefixeSortie + Fichiers.Horodatage() + ".pdf";
-                txtSortie.Text = Directory.Exists(dossierSortie) ? Fichiers.NomLibre(dossierSortie, nom) : nom;
-                majNom = false;
-            }
             txtDossierSortie.Text = string.IsNullOrEmpty(dossierSortie)
                 ? L("Enregistré dans le dossier des fichiers sources.")
                 : L("Enregistré dans : {0}", dossierSortie);
+            MajNomSortie();
+        }
+
+        /// <summary>
+        /// La case ne contient que la partie choisie par l'utilisateur ; la fin
+        /// « _FUSION_&lt;date&gt;.pdf » est fixe et affichée à côté. Case vide :
+        /// texte d'invite, et Fusionner refuse (demandé le 21/10 : les gens ne
+        /// mettaient rien devant le _).
+        /// </summary>
+        void MajNomSortie()
+        {
+            bool vide = Fichiers.NomSaisi(txtSortie.Text).Length == 0;
+            txtNomVide.Visibility = string.IsNullOrEmpty(txtSortie.Text) ? Visibility.Visible : Visibility.Collapsed;
+            txtSuffixeSortie.Text = Fichiers.PrefixeSortie + Fichiers.Horodatage() + ".pdf";
+            if (!vide && erreurNom)
+            {
+                // Le nom est tapé : le message rouge n'a plus lieu d'être.
+                erreurNom = false;
+                txtSortie.ClearValue(Control.BorderBrushProperty);
+                MasquerBandeau();
+            }
+        }
+
+        bool erreurNom;
+
+        void SignalerNomManquant()
+        {
+            erreurNom = true;
+            txtSortie.BorderBrush = new SolidColorBrush(Color.FromRgb(0xDC, 0x26, 0x26));
+            txtSortie.Focus();
         }
 
         void EnregistrerSous()
@@ -981,31 +1077,36 @@ namespace FusionPDF
             dlg.Filter = "PDF (*.pdf)|*.pdf";
             dlg.DefaultExt = ".pdf";
             dlg.AddExtension = true;
-            dlg.OverwritePrompt = false;   // demandé au moment de fusionner
-            dlg.FileName = txtSortie.Text;
+            dlg.OverwritePrompt = false;   // le nom final porte la date, NomLibre évite l'écrasement
+            string saisi = Fichiers.NomSaisi(txtSortie.Text);
+            dlg.FileName = saisi.Length > 0 ? saisi : L("Nom du document");
             if (!string.IsNullOrEmpty(dossierSortie) && Directory.Exists(dossierSortie)) dlg.InitialDirectory = dossierSortie;
             if (dlg.ShowDialog(W) != true) return;
             dossierSortie = Path.GetDirectoryName(dlg.FileName);
             dossierChoisi = true;
-            majNom = true;
-            txtSortie.Text = Path.GetFileName(dlg.FileName);
-            majNom = false;
-            nomModifie = true;
+            // Le nom choisi ici devient la partie saisie ; la marque _FUSION_<date> s'ajoute toujours.
+            txtSortie.Text = Fichiers.NomSaisi(Path.GetFileName(dlg.FileName));
             MajSortieParDefaut();
         }
 
         string CheminSortie()
         {
-            string nom = (txtSortie.Text ?? "").Trim();
+            string nom = Fichiers.NomSaisi(txtSortie.Text);
             if (nom.Length == 0)
-                throw new ErreurUtilisateur(L("Le nom du fichier de sortie est vide."), L("Indiquez un nom, par exemple {0}.", Fichiers.PrefixeSortie + Fichiers.Horodatage() + ".pdf"));
+            {
+                SignalerNomManquant();
+                throw new ErreurUtilisateur(L("Donnez un nom au fichier fusionné."),
+                                            L("Tapez-le dans la case « Fichier de sortie », devant {0} : par exemple « Dossier Dupont ».", Fichiers.PrefixeSortie + "…"));
+            }
             if (nom.IndexOfAny(Path.GetInvalidFileNameChars()) >= 0)
+            {
+                txtSortie.Focus();
                 throw new ErreurUtilisateur(L("Le nom du fichier de sortie n'est pas valide."), L("Ces caractères ne sont pas permis : {0}", "\\ / : * ? \" < > |"));
-            if (!nom.EndsWith(".pdf", StringComparison.OrdinalIgnoreCase)) nom += ".pdf";
+            }
             string d = dossierSortie;
             if (string.IsNullOrEmpty(d) || !Directory.Exists(d))
                 throw new ErreurUtilisateur(L("Le dossier de destination n'existe plus."), L("Choisissez un emplacement avec « Enregistrer sous… »."));
-            return Path.Combine(d, nom);
+            return Path.Combine(d, Fichiers.NomLibre(d, Fichiers.NomSortie(nom, Fichiers.Horodatage())));
         }
 
         // =================================================================
@@ -1091,7 +1192,7 @@ namespace FusionPDF
                 if (r.CheminsRenommes.TryGetValue(e.Chemin, out nouveau)) e.Chemin = nouveau;
             }
             derniereSortie = r.Sortie;
-            nomModifie = false;
+            txtSortie.Text = "";   // la prochaine fusion est un autre document : nouveau nom obligatoire
             if (!dossierChoisi) dossierSortie = null;
             MajSortieParDefaut();
             MajResume();

@@ -146,20 +146,20 @@ en: <Bold>Add the PDFs</Bold>: drop them into the window, a whole folder if you 
 fr: <Bold>Vérifiez l'ordre</Bold> : l'ordre de la liste est l'ordre du fichier final. Cliquez sur une ligne pour voir sa première page à droite.
 en: <Bold>Check the order</Bold>: the order of the list is the order of the final file. Click a row to see its first page on the right.
 
-fr: <Bold>Cliquez sur Fusionner</Bold>. Le fichier _FUSION_&lt;date&gt;.pdf apparaît dans le dossier des fichiers, avec les boutons « Ouvrir le PDF » et « Ouvrir le dossier ».
-en: <Bold>Click Merge</Bold>. The file _MERGED_&lt;date&gt;.pdf appears in the folder of the files, with the “Open the PDF” and “Open the folder” buttons.
+fr: <Bold>Nommez le fichier, puis cliquez sur Fusionner</Bold>. Le nom est obligatoire : tapez-le dans la case « Fichier de sortie », par exemple « Dossier Dupont ». Le fichier Dossier Dupont_FUSION_&lt;date&gt;.pdf apparaît dans le dossier des fichiers, avec les boutons « Ouvrir le PDF » et « Ouvrir le dossier ».
+en: <Bold>Name the file, then click Merge</Bold>. The name is required: type it in the “Output file” box, for example “Smith file”. The file Smith file_MERGED_&lt;date&gt;.pdf appears in the folder of the files, with the “Open the PDF” and “Open the folder” buttons.
 
 fr: Depuis l'Explorateur, sans ouvrir l'application
 en: From File Explorer, without opening the app
 
-fr: Clic droit sur un dossier, puis <Bold>« Afficher d'autres options »</Bold> et <Bold>« Fusionner les PDF de ce dossier »</Bold>. Fusion PDF s'ouvre avec tous les PDF du dossier, déjà triés.
-en: Right-click a folder, then <Bold>“Show more options”</Bold> and <Bold>“Merge the PDFs in this folder”</Bold>. Fusion PDF opens with all the PDFs of the folder, already sorted.
+fr: Clic droit sur un dossier, puis <Bold>« Afficher d'autres options »</Bold> et <Bold>« Fusionner les PDF de ce dossier »</Bold>. Fusion PDF s'ouvre avec tous les PDF du dossier, déjà triés. Pour toute l'arborescence, choisissez <Bold>« Fusionner les PDF de ce dossier et de ses sous-dossiers »</Bold>.
+en: Right-click a folder, then <Bold>“Show more options”</Bold> and <Bold>“Merge the PDFs in this folder”</Bold>. Fusion PDF opens with all the PDFs of the folder, already sorted. For the whole tree, choose <Bold>“Merge the PDFs in this folder and its subfolders”</Bold>.
 
-fr: Raccourci : Maj + clic droit affiche directement la commande. Pour prendre aussi les PDF des sous-dossiers, cochez <Bold>« Inclure les sous-dossiers »</Bold> : ils suivent, dossier par dossier, dans l'ordre de l'Explorateur.
-en: Shortcut: Shift + right-click shows the command directly. To also take the PDFs in subfolders, tick <Bold>“Include subfolders”</Bold>: they follow, folder by folder, in File Explorer order.
+fr: Raccourci : Maj + clic droit affiche directement la commande. Pour prendre aussi les PDF des sous-dossiers, cochez <Bold>« Inclure les sous-dossiers »</Bold> : l'ordre est celui de l'Explorateur, les sous-dossiers d'abord, puis les PDF du dossier.
+en: Shortcut: Shift + right-click shows the command directly. To also take the PDFs in subfolders, tick <Bold>“Include subfolders”</Bold>: the order is File Explorer's, subfolders first, then the folder's own PDFs.
 
-fr: Prend aussi les PDF des sous-dossiers, dossier par dossier, dans l'ordre de l'Explorateur. Le choix est mémorisé.
-en: Also takes the PDFs in subfolders, folder by folder, in File Explorer order. Your choice is remembered.
+fr: Prend aussi les PDF des sous-dossiers, dans l'ordre de l'Explorateur : les sous-dossiers d'abord, puis les PDF du dossier. Le choix est mémorisé.
+en: Also takes the PDFs in subfolders, in File Explorer order: subfolders first, then the folder's own PDFs. Your choice is remembered.
 
 fr: Inclure les sous-dossiers
 en: Include subfolders
@@ -176,8 +176,8 @@ en: Neither directly nor in its subfolders. Folder: {0}
 fr: {0} depuis les sous-dossiers.
 en: {0} from the subfolders.
 
-fr: Ils sont placés à la fin de la liste, dans l'ordre des dossiers.
-en: They are placed at the end of the list, in folder order.
+fr: La liste suit l'ordre de l'Explorateur : à chaque niveau, les sous-dossiers d'abord, puis les PDF du dossier.
+en: The list follows File Explorer order: at each level, subfolders first, then the folder's own PDFs.
 
 fr: Aucun PDF dans les sous-dossiers.
 en: No PDF in the subfolders.
@@ -337,11 +337,26 @@ en: Saved in: {0}
 fr: Enregistrer le PDF fusionné
 en: Save the merged PDF
 
-fr: Le nom du fichier de sortie est vide.
-en: The output file name is empty.
+fr: Donnez un nom au fichier fusionné.
+en: Give the merged file a name.
 
-fr: Indiquez un nom, par exemple {0}.
-en: Enter a name, for example {0}.
+fr: Tapez-le dans la case « Fichier de sortie », devant {0} : par exemple « Dossier Dupont ».
+en: Type it in the “Output file” box, before {0}: for example “Smith file”.
+
+fr: Donnez d'abord un nom au fichier
+en: Name the file first
+
+fr: Nom du document (obligatoire)
+en: Document name (required)
+
+fr: Nom du document
+en: Document name
+
+fr: Obligatoire : le nom du document, par exemple « Dossier Dupont ».
+en: Required: the name of the document, for example “Smith file”.
+
+fr: Ajouté automatiquement : marque le fichier comme une fusion, avec la date.
+en: Added automatically: marks the file as a merge, with the date.
 
 fr: Le nom du fichier de sortie n'est pas valide.
 en: The output file name is not valid.

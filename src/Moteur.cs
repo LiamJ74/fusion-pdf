@@ -85,6 +85,36 @@ namespace FusionPDF
         }
     }
 
+    /// <summary>
+    /// Ordre de l'Explorateur trié par nom, sur des chemins complets : à chaque
+    /// niveau, les sous-dossiers d'abord (ordre naturel de leur nom, même règle
+    /// à l'intérieur), puis les fichiers (tri naturel). C'est l'ordre de
+    /// Fichiers.PdfDuDossier. Sur des fichiers d'un seul dossier, il se réduit
+    /// au tri naturel des noms.
+    /// Ajouté le 20/10 (1.4) : cocher « Inclure les sous-dossiers » après coup
+    /// mettait les PDF des sous-dossiers à la fin, et « Trier par nom » triait
+    /// sur le nom seul, tous dossiers confondus.
+    /// </summary>
+    public sealed class TriArbre : IComparer<string>
+    {
+        public static readonly TriArbre Instance = new TriArbre();
+
+        public int Compare(string a, string b)
+        {
+            string[] da = (Path.GetDirectoryName(a) ?? "").TrimEnd('\\').Split('\\');
+            string[] db = (Path.GetDirectoryName(b) ?? "").TrimEnd('\\').Split('\\');
+            int n = Math.Min(da.Length, db.Length);
+            for (int i = 0; i < n; i++)
+            {
+                int c = TriNaturel.Instance.Compare(da[i], db[i]);
+                if (c != 0) return c;
+            }
+            // L'un des fichiers est à ce niveau, l'autre plus bas : le sous-dossier d'abord.
+            if (da.Length != db.Length) return da.Length > db.Length ? -1 : 1;
+            return TriNaturel.Instance.Compare(Path.GetFileName(a), Path.GetFileName(b));
+        }
+    }
+
     public static class Format
     {
         public static string Taille(long octets)
@@ -174,12 +204,40 @@ namespace FusionPDF
         public static string PrefixeSortie { get { return Langue.Anglais ? "_MERGED_" : "_FUSION_"; } }
         public static string PrefixeRenommage { get { return Langue.Anglais ? "_RENAMED_" : "_RENOMMAGE_"; } }
 
+        // Depuis la 1.4, le nom de sortie est « <nom saisi>_FUSION_<date>.pdf » :
+        // la marque est en FIN de nom. « (2) » : ajouté par NomLibre.
+        static readonly Regex MarqueSortie = new Regex(@"(_FUSION_|_MERGED_)\d{4}-\d{2}-\d{2}_\d{4}( \(\d+\))?$",
+                                                       RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+        static readonly Regex MarqueSortieSaisie = new Regex(@"(_FUSION_|_MERGED_)(\d{4}-\d{2}-\d{2}_\d{4})?( \(\d+\))?$",
+                                                             RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+
         /// <summary>Un PDF produit par Fusion PDF : jamais repris quand on charge un dossier.</summary>
         public static bool EstUneSortie(string nom)
         {
+            // Avant la 1.4, la marque était en tête : « _FUSION_<date>.pdf ».
             foreach (string p in new[] { "_FUSION_", "_MERGED_", ".~FusionPDF-" })
                 if (nom.StartsWith(p, StringComparison.OrdinalIgnoreCase)) return true;
-            return false;
+            return string.Equals(Path.GetExtension(nom), ".pdf", StringComparison.OrdinalIgnoreCase)
+                   && MarqueSortie.IsMatch(Path.GetFileNameWithoutExtension(nom));
+        }
+
+        /// <summary>
+        /// Ce que l'utilisateur a tapé, nettoyé : sans « .pdf », sans une marque
+        /// _FUSION_… collée par erreur, sans espace, point ou _ en bout (Windows
+        /// refuse un nom fini par un point ou un espace). Vide si rien d'utile.
+        /// </summary>
+        public static string NomSaisi(string saisie)
+        {
+            string n = (saisie ?? "").Trim();
+            if (n.EndsWith(".pdf", StringComparison.OrdinalIgnoreCase)) n = n.Substring(0, n.Length - 4);
+            n = MarqueSortieSaisie.Replace(n, "");
+            return n.Trim().TrimEnd('_', '.', ' ').Trim();
+        }
+
+        /// <summary>« Dossier Dupont » -> « Dossier Dupont_FUSION_2026-10-21_0930.pdf ».</summary>
+        public static string NomSortie(string nomSaisi, string horodatage)
+        {
+            return nomSaisi + PrefixeSortie + horodatage + ".pdf";
         }
 
         /// <summary>Un PDF à prendre en chargeant un dossier : ni une fusion produite, ni un fichier caché.</summary>
@@ -195,10 +253,10 @@ namespace FusionPDF
         public const int ProfondeurMax = 32;
 
         /// <summary>
-        /// Les PDF d'un dossier, dans l'ordre de l'arborescence de l'Explorateur :
-        /// d'abord ceux du dossier (tri naturel), puis, si sousDossiers, chaque
-        /// sous-dossier dans l'ordre naturel de son nom, et ses propres
-        /// sous-dossiers à sa suite.
+        /// Les PDF d'un dossier, dans l'ordre de l'Explorateur trié par nom : si
+        /// sousDossiers, d'abord chaque sous-dossier dans l'ordre naturel de son
+        /// nom (avec la même règle à l'intérieur), puis les PDF du dossier
+        /// lui-même (tri naturel).
         /// Les dossiers cachés ou système sont ignorés. Un dossier déjà parcouru
         /// ne l'est pas deux fois. Les dossiers OneDrive « en ligne seulement »
         /// sont parcourus sans être téléchargés : énumérer ne rapatrie rien.
@@ -216,29 +274,34 @@ namespace FusionPDF
             try { plein = Path.GetFullPath(d).TrimEnd('\\'); }
             catch { return; }
             if (profondeur > ProfondeurMax || !vus.Add(plein)) return;
+            List<string> fichiers;
             try
             {
-                foreach (string f in Directory.EnumerateFiles(d).Where(EstPdfAPrendre).OrderBy(f => Path.GetFileName(f), TriNaturel.Instance))
-                    res.Add(f);
+                fichiers = Directory.EnumerateFiles(d).Where(EstPdfAPrendre).OrderBy(f => Path.GetFileName(f), TriNaturel.Instance).ToList();
             }
             catch (Exception e)
             {
                 Journal.Ecrire("Dossier illisible : " + d + " : " + e.Message);
                 return;
             }
-            if (!sousDossiers) return;
-            string[] sous;
-            try { sous = Directory.GetDirectories(d); }
-            catch (Exception e) { Journal.Ecrire("Sous-dossiers illisibles : " + d + " : " + e.Message); return; }
-            foreach (string s in sous.OrderBy(x => Path.GetFileName(x), TriNaturel.Instance))
+            // Les sous-dossiers AVANT les fichiers, comme l'Explorateur les
+            // affiche (corrigé le 20/10 : en 1.3, les fichiers passaient d'abord).
+            if (sousDossiers)
             {
-                FileAttributes a;
-                try { a = File.GetAttributes(s); }
-                catch { continue; }
-                if ((a & (FileAttributes.Hidden | FileAttributes.System)) != 0) continue;
-                if ((a & FileAttributes.ReparsePoint) != 0 && EstLien(s)) continue;
-                Parcourir(s, true, profondeur + 1, res, vus);
+                string[] sous = new string[0];
+                try { sous = Directory.GetDirectories(d); }
+                catch (Exception e) { Journal.Ecrire("Sous-dossiers illisibles : " + d + " : " + e.Message); }
+                foreach (string s in sous.OrderBy(x => Path.GetFileName(x), TriNaturel.Instance))
+                {
+                    FileAttributes a;
+                    try { a = File.GetAttributes(s); }
+                    catch { continue; }
+                    if ((a & (FileAttributes.Hidden | FileAttributes.System)) != 0) continue;
+                    if ((a & FileAttributes.ReparsePoint) != 0 && EstLien(s)) continue;
+                    Parcourir(s, true, profondeur + 1, res, vus);
+                }
             }
+            res.AddRange(fichiers);
         }
 
         // Jonctions et liens symboliques : on ne les suit pas (comme robocopy /XJ).

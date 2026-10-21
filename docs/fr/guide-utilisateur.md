@@ -13,12 +13,14 @@ les renommer).
 1. **Ajoutez les PDF.** Déposez des fichiers ou un dossier entier dans la
    fenêtre, ou cliquez sur **Choisir un dossier** / **Ajouter des fichiers**.
    Seuls les PDF placés directement dans un dossier sont pris, sauf si **Inclure les
-   sous-dossiers** est coché : ceux des sous-dossiers suivent alors, dossier par dossier,
-   dans l'ordre de l'Explorateur. Le choix est mémorisé.
+   sous-dossiers** est coché : ceux des sous-dossiers sont pris aussi, dans l'ordre de
+   l'Explorateur trié par nom : à chaque niveau, les sous-dossiers d'abord, puis les
+   PDF du dossier. Le choix est mémorisé.
 2. **Vérifiez l'ordre.** L'ordre de la liste est l'ordre du fichier final.
    Cliquez sur une ligne pour voir sa première page à droite.
-3. **Cliquez sur Fusionner.** Le fichier `_FUSION_<date>.pdf` est créé dans le
-   dossier des fichiers. Un bandeau vert indique son nom et son nombre de pages,
+3. **Nommez le fichier, puis cliquez sur Fusionner.** Le nom est obligatoire :
+   tapez-le dans **Fichier de sortie**, par exemple `Dossier Dupont`. Le fichier
+   `Dossier Dupont_FUSION_<date>.pdf` est créé dans le dossier des fichiers. Un bandeau vert indique son nom et son nombre de pages,
    avec **Ouvrir le PDF** et **Ouvrir le dossier**.
 
 ![Fusion terminée](../img/fr-merged.png)
@@ -30,6 +32,11 @@ PDF de ce dossier** (sous Windows 11 ; **Maj + clic droit** l'affiche
 directement). Cela fonctionne aussi d'un clic droit dans le vide, à l'intérieur
 d'un dossier ouvert. Fusion PDF s'ouvre avec tous les PDF du dossier, déjà triés
 par nom.
+
+Pour toute l'arborescence, choisissez **Fusionner les PDF de ce dossier et de ses
+sous-dossiers** : d'abord chaque sous-dossier dans l'ordre de son nom, puis les PDF
+du dossier, la même règle s'appliquant dans chaque sous-dossier. Cela vaut quel que
+soit l'état de la case *Inclure les sous-dossiers*, qui reste inchangée pour la suite.
 
 > Le clic droit est ajouté par `package\install.ps1`. Si vous avez seulement
 > téléchargé `FusionPDF.exe`, utilisez le glisser-déposer.
@@ -47,10 +54,15 @@ par nom.
 
 ## Le fichier de sortie
 
-Le nom proposé est `_FUSION_<date>.pdf`, dans le dossier du premier fichier.
-Modifiez-le dans **Fichier de sortie**, ou choisissez un autre dossier avec
-**Enregistrer sous…**. Si un fichier du même nom existe déjà, Fusion PDF demande
-avant de le remplacer.
+Le nom se compose de ce que vous tapez dans **Fichier de sortie**, suivi de
+`_FUSION_<date>.pdf`, ajouté automatiquement et affiché à côté de la case. Sans
+nom, **Fusionner** refuse et la case passe en rouge. La fin `_FUSION_<date>`
+permet de reconnaître une fusion : elle n'est jamais reprise quand on recharge
+le dossier.
+
+Le fichier va dans le dossier ouvert ; **Enregistrer sous…** en choisit un autre.
+Un fichier du même nom n'est jamais écrasé : Fusion PDF ajoute ` (2)`. Après une
+fusion, la case se vide : le document suivant demande son propre nom.
 
 ## Renommer les sources 001_, 002_…
 

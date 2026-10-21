@@ -20,7 +20,7 @@
 #
 # PowerShell 5.1, ASCII strict, contexte SYSTEME.
 
-$VersionAttendue = '1.3.0.0'
+$VersionAttendue = '1.5.0.0'
 
 $racinePF = $env:ProgramW6432
 if (-not $racinePF) { $racinePF = $env:ProgramFiles }
@@ -40,7 +40,9 @@ if (-not (Test-Path -LiteralPath $Exe)) {
 
 $hklm = [Microsoft.Win32.RegistryKey]::OpenBaseKey('LocalMachine', 'Registry64')
 foreach ($cle in @('SOFTWARE\Classes\Directory\shell\FusionPDF\command',
-                   'SOFTWARE\Classes\Directory\Background\shell\FusionPDF\command')) {
+                   'SOFTWARE\Classes\Directory\Background\shell\FusionPDF\command',
+                   'SOFTWARE\Classes\Directory\shell\FusionPDFSousDossiers\command',
+                   'SOFTWARE\Classes\Directory\Background\shell\FusionPDFSousDossiers\command')) {
     $k = $hklm.OpenSubKey($cle)
     $val = $null
     if ($k) { $val = $k.GetValue(''); $k.Close() }

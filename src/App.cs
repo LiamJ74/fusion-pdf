@@ -2,6 +2,8 @@
 //
 //   FusionPDF.exe                      fenêtre vide (menu Démarrer)
 //   FusionPDF.exe "<dossier>"          fenêtre remplie (clic droit sur un dossier)
+//   FusionPDF.exe --sous-dossiers "<dossier>"   idem, avec toute l'arborescence
+//                                      (second clic droit), sans changer la préférence
 //   FusionPDF.exe "<a.pdf>" "<b.pdf>"  fenêtre remplie avec ces fichiers
 //   FusionPDF.exe --autotest <rapport> contrôles sans fenêtre, code 0 si tout passe
 //                                      (utilisé par Build-FusionPDF.ps1)
@@ -32,6 +34,9 @@ namespace FusionPDF
             int iLang = reste.FindIndex(a => a.Equals("--lang", StringComparison.OrdinalIgnoreCase));
             if (iLang >= 0 && iLang + 1 < reste.Count) { impose = reste[iLang + 1]; reste.RemoveRange(iLang, 2); }
             Langue.Choisir(impose);
+
+            // --sous-dossiers : second clic droit « … et de ses sous-dossiers ».
+            bool avecSousDossiers = reste.RemoveAll(a => a.Equals("--sous-dossiers", StringComparison.OrdinalIgnoreCase)) > 0;
 
             // --liste <fichier> : relance après un changement de langue, la
             // liste en cours y est écrite dans son ordre, un chemin par ligne.
@@ -84,7 +89,7 @@ namespace FusionPDF
 
             List<string> chemins = args.Select(NettoyerArgument).Where(a => a.Length > 0).ToList();
             Journal.Ecrire("Démarrage " + Version + (Langue.Anglais ? " [en]" : " [fr]") + (chemins.Count > 0 ? " : " + string.Join(" | ", chemins) : ""));
-            f.W.Loaded += delegate { if (chemins.Count > 0) f.Charger(chemins); };
+            f.W.Loaded += delegate { if (chemins.Count > 0) f.Charger(chemins, avecSousDossiers); };
             int code = app.Run(f.W);
             Journal.Ecrire("Fermeture");
             return Terminer(code);
@@ -223,11 +228,74 @@ namespace FusionPDF
                     string plat = rel(Fichiers.PdfDuDossier(r, false));
                     Attendu(plat == "a9.pdf a10.pdf b.pdf", plat);
                     string arbre = rel(Fichiers.PdfDuDossier(r, true));
-                    Attendu(arbre == "a9.pdf a10.pdf b.pdf sous2\\x.pdf sous2\\profond\\z.pdf sous10\\y.pdf", arbre);
+                    Attendu(arbre == "sous2\\profond\\z.pdf sous2\\x.pdf sous10\\y.pdf a9.pdf a10.pdf b.pdf", arbre);
                     Attendu(Fichiers.EstSousDossierDe(Path.Combine(r, "sous2"), r) && !Fichiers.EstSousDossierDe(r, r)
                             && !Fichiers.EstSousDossierDe(r + "-autre", r), "EstSousDossierDe");
                     if (avecJonction) Directory.Delete(jonction);
                     return arbre + (avecJonction ? " ; jonction ignorée" : " ; jonction non créée");
+                });
+
+                // Cas réel du 20/10 : dossier chargé, PUIS case cochée. Les PDF des
+                // sous-dossiers partaient à la fin de la liste. 150 fichiers, comme
+                // les dossiers du service, avec des noms que le tri alphabétique
+                // simple mettrait dans le désordre (2 après 10, Chapitre 10 avant 2).
+                Verifier("Cocher les sous-dossiers après chargement : ordre de l'arborescence (150 PDF)", delegate
+                {
+                    string r = Path.Combine(tmp, "dossier 150");
+                    List<string> attendu = new List<string>();
+                    Action<string, int> creer = delegate(string sd, int n)
+                    {
+                        Directory.CreateDirectory(Path.Combine(r, sd));
+                        for (int i = 1; i <= n; i++)
+                        {
+                            string f = Path.Combine(r, sd, "Page " + i + ".pdf");
+                            File.WriteAllText(f, "x");
+                            attendu.Add(f);
+                        }
+                    };
+                    // Créés dans l'ordre attendu, celui de l'Explorateur trié par
+                    // nom : à chaque niveau, les sous-dossiers d'abord, puis les fichiers.
+                    for (int c = 1; c <= 10; c++)
+                    {
+                        if (c == 2) { creer("Chapitre 2\\Annexe\\Détail", 3); creer("Chapitre 2\\Annexe", 5); }
+                        if (c == 10) creer("Chapitre 10\\Z", 12);
+                        creer("Chapitre " + c, 10);
+                    }
+                    creer("", 30);
+                    Attendu(attendu.Count == 150, attendu.Count + " fichiers créés");
+
+                    string aPart = Path.Combine(tmp, "à part.pdf");
+                    File.WriteAllText(aPart, "x");
+
+                    List<string> obtenu = new Fenetre().EssaiCocherApresChargement(new[] { aPart, r });
+                    List<string> voulu = new[] { aPart }.Concat(attendu).ToList();
+                    for (int i = 0; i < Math.Max(obtenu.Count, voulu.Count); i++)
+                        Attendu(i < obtenu.Count && i < voulu.Count && string.Equals(obtenu[i], voulu[i], StringComparison.OrdinalIgnoreCase),
+                                "position " + (i + 1) + " : " + (i < obtenu.Count ? obtenu[i].Substring(tmp.Length) : "(rien)")
+                                + ", attendu " + (i < voulu.Count ? voulu[i].Substring(tmp.Length) : "(rien)"));
+
+                    // « Trier par nom » doit rendre le même ordre depuis un désordre complet.
+                    List<string> melange = attendu.OrderBy(x => x.GetHashCode()).ToList();
+                    Attendu(melange.OrderBy(x => x, TriArbre.Instance).SequenceEqual(attendu, StringComparer.OrdinalIgnoreCase), "TriArbre");
+                    return obtenu.Count + " éléments : à part, " + obtenu[1].Substring(r.Length + 1) + " … " + obtenu[obtenu.Count - 1].Substring(r.Length + 1);
+                });
+
+                // Demande du 21/10 : nom obligatoire devant _FUSION_<date>, et la
+                // fusion produite reste reconnue (jamais refusionnée) avec la marque en fin de nom.
+                Verifier("Nom de sortie obligatoire, marque _FUSION_ en fin de nom", delegate
+                {
+                    foreach (string vide in new[] { "", "   ", "_", ".pdf", "_FUSION_", "_FUSION_2026-10-21_0930.pdf", " . _ " })
+                        Attendu(Fichiers.NomSaisi(vide) == "", "« " + vide + " » accepté comme nom");
+                    Attendu(Fichiers.NomSaisi(" Dossier Dupont_ ") == "Dossier Dupont", Fichiers.NomSaisi(" Dossier Dupont_ "));
+                    Attendu(Fichiers.NomSaisi("Devis_FUSION_2026-10-21_0930 (2).pdf") == "Devis", Fichiers.NomSaisi("Devis_FUSION_2026-10-21_0930 (2).pdf"));
+                    Attendu(Fichiers.NomSaisi("Rapport_final") == "Rapport_final", "un _ au milieu doit rester");
+                    string n = Fichiers.NomSortie("Dossier Dupont", "2026-10-21_0930");
+                    Attendu(n == "Dossier Dupont_FUSION_2026-10-21_0930.pdf", n);
+                    foreach (string sortie in new[] { n, "Devis_FUSION_2026-10-21_0930 (2).pdf", "_FUSION_2026-10-20_1200.pdf", "x_MERGED_2026-10-21_0930.pdf" })
+                        Attendu(Fichiers.EstUneSortie(sortie), sortie + " non reconnu comme une fusion");
+                    foreach (string source in new[] { "Rapport_FUSION_final.pdf", "Fusion des comptes.pdf", "a_FUSION_2026-10-21_0930.txt" })
+                        Attendu(!Fichiers.EstUneSortie(source), source + " pris pour une fusion");
+                    return n;
                 });
 
                 Verifier("Argument de clic droit sur un lecteur", delegate

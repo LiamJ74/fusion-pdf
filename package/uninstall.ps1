@@ -25,7 +25,8 @@ $racinePF = $env:ProgramW6432
 if (-not $racinePF) { $racinePF = $env:ProgramFiles }
 $Dossier = Join-Path $racinePF 'Fusion PDF'
 $Lnk     = Join-Path $env:ProgramData 'Microsoft\Windows\Start Menu\Programs\Fusion PDF.lnk'
-$Cles    = @("SOFTWARE\Classes\Directory\shell\$NomCle", "SOFTWARE\Classes\Directory\Background\shell\$NomCle")
+$Cles    = @("SOFTWARE\Classes\Directory\shell\$NomCle", "SOFTWARE\Classes\Directory\Background\shell\$NomCle",
+             "SOFTWARE\Classes\Directory\shell\FusionPDFSousDossiers", "SOFTWARE\Classes\Directory\Background\shell\FusionPDFSousDossiers")
 
 if (-not (Test-Path -LiteralPath $LogDir)) { New-Item -ItemType Directory -Path $LogDir -Force | Out-Null }
 function Write-Log([string]$Ligne) {

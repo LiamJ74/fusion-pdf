@@ -28,6 +28,7 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\install.ps1
 | Start menu | `C:\ProgramData\Microsoft\Windows\Start Menu\Programs\Fusion PDF.lnk` |
 | Right-click on a folder | `HKLM\SOFTWARE\Classes\Directory\shell\FusionPDF` (`"%1"`) |
 | Right-click inside a folder | `HKLM\SOFTWARE\Classes\Directory\Background\shell\FusionPDF` (`"%V"`) |
+| Same, with subfolders | `…\Directory\shell\FusionPDFSousDossiers` and `…\Directory\Background\shell\FusionPDFSousDossiers` (`--sous-dossiers "%1"` / `"%V"`) |
 | Log | `C:\ProgramData\FusionPDF\FusionPDF-install.log` (or `%LOCALAPPDATA%\FusionPDF\` when run without admin rights) |
 
 The right-click label follows the language Windows was installed in. The script
@@ -115,6 +116,7 @@ Good to know — all observed in production:
 ```
 FusionPDF.exe                         empty window
 FusionPDF.exe "<folder>"              window filled with the PDFs of the folder
+FusionPDF.exe --sous-dossiers "<dir>" same, with the whole tree (preference unchanged)
 FusionPDF.exe "<a.pdf>" "<b.pdf>"     window filled with these files, in this order
 FusionPDF.exe --lang en|fr ...        forces the language
 FusionPDF.exe --autotest <report>     self-tests without a window (used by the build)

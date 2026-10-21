@@ -369,7 +369,7 @@
               <TextBlock Text="§Ils s'ajoutent à la liste. L'ordre de la liste est l'ordre de la fusion.§" Foreground="{StaticResource G500}" FontSize="12.5" Margin="0,2,0,0" TextWrapping="Wrap"/>
               <!-- Texte dans un TextBlock : en Content direct, un « _ » serait pris pour une touche d'accès. -->
               <CheckBox x:Name="ChkSousDossiers" Margin="0,6,0,0" VerticalContentAlignment="Center" Foreground="{StaticResource G700}"
-                        ToolTip="§Prend aussi les PDF des sous-dossiers, dossier par dossier, dans l'ordre de l'Explorateur. Le choix est mémorisé.§">
+                        ToolTip="§Prend aussi les PDF des sous-dossiers, dans l'ordre de l'Explorateur : les sous-dossiers d'abord, puis les PDF du dossier. Le choix est mémorisé.§">
                 <TextBlock Text="§Inclure les sous-dossiers§" FontSize="12.5"/>
               </CheckBox>
             </StackPanel>
@@ -541,7 +541,21 @@
               <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
             <TextBlock Text="§Fichier de sortie§" FontWeight="SemiBold" VerticalAlignment="Center" Margin="0,0,12,0" Foreground="{StaticResource G700}"/>
-            <TextBox x:Name="TxtSortie" Grid.Column="1" Style="{StaticResource Champ}" MinWidth="300"/>
+            <!-- Le nom est OBLIGATOIRE (demande du 21/10) : l'utilisateur tape la
+                 partie avant « _FUSION_<date>.pdf », qui est fixe et affichée à côté. -->
+            <Grid Grid.Column="1" HorizontalAlignment="Left">
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+              </Grid.ColumnDefinitions>
+              <TextBox x:Name="TxtSortie" Style="{StaticResource Champ}" Width="260"
+                       ToolTip="§Obligatoire : le nom du document, par exemple « Dossier Dupont ».§"/>
+              <TextBlock x:Name="TxtNomVide" Text="§Nom du document (obligatoire)§" IsHitTestVisible="False"
+                         VerticalAlignment="Center" Margin="10,0,0,0" Foreground="#9CA3AF" FontStyle="Italic"/>
+              <TextBlock x:Name="TxtSuffixeSortie" Grid.Column="1" VerticalAlignment="Center" Margin="3,0,0,0"
+                         Foreground="{StaticResource G500}" FontFamily="Consolas" FontSize="12.5"
+                         ToolTip="§Ajouté automatiquement : marque le fichier comme une fusion, avec la date.§"/>
+            </Grid>
             <Button x:Name="BtnEnregistrerSous" Grid.Column="2" Style="{StaticResource BtnSec}" Margin="8,0,0,0" Padding="11,7" ToolTip="§Choisir le dossier et le nom du fichier fusionné§">
               <StackPanel Orientation="Horizontal"><TextBlock Style="{StaticResource Ico}" Text="&#xE74E;"/><TextBlock Text="§Enregistrer sous…§" Margin="6,0,0,0"/></StackPanel>
             </Button>
@@ -648,12 +662,12 @@
               </DockPanel>
               <DockPanel>
                 <Border Style="{StaticResource Num}"><TextBlock Style="{StaticResource NumTxt}" Text="3"/></Border>
-                <TextBlock Style="{StaticResource Texte}">§<Bold>Cliquez sur Fusionner</Bold>. Le fichier _FUSION_&lt;date&gt;.pdf apparaît dans le dossier des fichiers, avec les boutons «&#160;Ouvrir le PDF&#160;» et «&#160;Ouvrir le dossier&#160;».§</TextBlock>
+                <TextBlock Style="{StaticResource Texte}">§<Bold>Nommez le fichier, puis cliquez sur Fusionner</Bold>. Le nom est obligatoire : tapez-le dans la case «&#160;Fichier de sortie&#160;», par exemple «&#160;Dossier Dupont&#160;». Le fichier Dossier Dupont_FUSION_&lt;date&gt;.pdf apparaît dans le dossier des fichiers, avec les boutons «&#160;Ouvrir le PDF&#160;» et «&#160;Ouvrir le dossier&#160;».§</TextBlock>
               </DockPanel>
 
               <TextBlock Style="{StaticResource Titre}" Text="§Depuis l'Explorateur, sans ouvrir l'application§"/>
-              <TextBlock Style="{StaticResource Texte}">§Clic droit sur un dossier, puis <Bold>«&#160;Afficher d'autres options&#160;»</Bold> et <Bold>«&#160;Fusionner les PDF de ce dossier&#160;»</Bold>. Fusion PDF s'ouvre avec tous les PDF du dossier, déjà triés.§</TextBlock>
-              <TextBlock Style="{StaticResource Texte}" Foreground="#6B7280">§Raccourci : Maj + clic droit affiche directement la commande. Pour prendre aussi les PDF des sous-dossiers, cochez <Bold>«&#160;Inclure les sous-dossiers&#160;»</Bold> : ils suivent, dossier par dossier, dans l'ordre de l'Explorateur.§</TextBlock>
+              <TextBlock Style="{StaticResource Texte}">§Clic droit sur un dossier, puis <Bold>«&#160;Afficher d'autres options&#160;»</Bold> et <Bold>«&#160;Fusionner les PDF de ce dossier&#160;»</Bold>. Fusion PDF s'ouvre avec tous les PDF du dossier, déjà triés. Pour toute l'arborescence, choisissez <Bold>«&#160;Fusionner les PDF de ce dossier et de ses sous-dossiers&#160;»</Bold>.§</TextBlock>
+              <TextBlock Style="{StaticResource Texte}" Foreground="#6B7280">§Raccourci : Maj + clic droit affiche directement la commande. Pour prendre aussi les PDF des sous-dossiers, cochez <Bold>«&#160;Inclure les sous-dossiers&#160;»</Bold> : l'ordre est celui de l'Explorateur, les sous-dossiers d'abord, puis les PDF du dossier.§</TextBlock>
 
               <TextBlock Style="{StaticResource Titre}" Text="§Changer l'ordre§"/>
               <TextBlock Style="{StaticResource Texte}">§• <Bold>Glissez une ligne</Bold> à sa place : un trait bleu montre où elle va. Ctrl ou Maj pour en déplacer plusieurs.§</TextBlock>

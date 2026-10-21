@@ -38,9 +38,16 @@ $Description = 'Assembler plusieurs PDF en un seul fichier, dans l ordre voulu. 
 
 # Le clic droit est commun a tout le poste : sa langue suit celle de
 # l'installation de Windows (l'application, elle, suit chaque utilisateur).
-$Verbe    = 'Merge the PDFs in this folder'
-if ([Globalization.CultureInfo]::InstalledUICulture.TwoLetterISOLanguageName -eq 'fr') { $Verbe = 'Fusionner les PDF de ce dossier' }
-$NomCle   = 'FusionPDF'
+$Verbe     = 'Merge the PDFs in this folder'
+$VerbeSous = 'Merge the PDFs in this folder and its subfolders'
+if ([Globalization.CultureInfo]::InstalledUICulture.TwoLetterISOLanguageName -eq 'fr') {
+    $Verbe     = 'Fusionner les PDF de ce dossier'
+    $VerbeSous = 'Fusionner les PDF de ce dossier et de ses sous-dossiers'
+}
+$NomCle     = 'FusionPDF'
+# Second clic droit (1.4) : l'arborescence complete, quel que soit l'etat de
+# la case de l'application. Son nom suit 'FusionPDF' : il s'affiche juste apres.
+$NomCleSous = 'FusionPDFSousDossiers'
 $LogDir   = $(if (([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) { 'C:\ProgramData\FusionPDF' } else { Join-Path $env:LOCALAPPDATA 'FusionPDF' })
 $Journal  = Join-Path $LogDir 'FusionPDF-install.log'
 
@@ -112,14 +119,16 @@ try {
     # Directory\shell            : clic droit SUR un dossier      -> %1
     # Directory\Background\shell : clic droit DANS un dossier     -> %V
     $hklm = [Microsoft.Win32.RegistryKey]::OpenBaseKey('LocalMachine', 'Registry64')
-    foreach ($v in @(@{ Cle = "SOFTWARE\Classes\Directory\shell\$NomCle"; Arg = '%1' },
-                     @{ Cle = "SOFTWARE\Classes\Directory\Background\shell\$NomCle"; Arg = '%V' })) {
+    foreach ($v in @(@{ Cle = "SOFTWARE\Classes\Directory\shell\$NomCle"; Arg = '"%1"'; Texte = $Verbe },
+                     @{ Cle = "SOFTWARE\Classes\Directory\Background\shell\$NomCle"; Arg = '"%V"'; Texte = $Verbe },
+                     @{ Cle = "SOFTWARE\Classes\Directory\shell\$NomCleSous"; Arg = '--sous-dossiers "%1"'; Texte = $VerbeSous },
+                     @{ Cle = "SOFTWARE\Classes\Directory\Background\shell\$NomCleSous"; Arg = '--sous-dossiers "%V"'; Texte = $VerbeSous })) {
         $k = $hklm.CreateSubKey($v.Cle)
-        $k.SetValue('MUIVerb', $Verbe, 'String')
+        $k.SetValue('MUIVerb', $v.Texte, 'String')
         $k.SetValue('Icon', "`"$Exe`",0", 'String')
         $k.Close()
         $c = $hklm.CreateSubKey($v.Cle + '\command')
-        $c.SetValue('', "`"$Exe`" `"$($v.Arg)`"", 'String')
+        $c.SetValue('', "`"$Exe`" $($v.Arg)", 'String')
         $c.Close()
         Write-Log "clic droit : HKLM\$($v.Cle)"
     }
@@ -134,10 +143,12 @@ if (-not (Test-Path -LiteralPath $Exe)) { $manque += 'exe' }
 elseif ("$((Get-Item -LiteralPath $Exe).VersionInfo.FileVersion)".Trim() -ne $verPaquet) { $manque += 'version' }
 if (-not (Test-Path -LiteralPath $Lnk)) { $manque += 'raccourci' }
 $hklm = [Microsoft.Win32.RegistryKey]::OpenBaseKey('LocalMachine', 'Registry64')
-foreach ($cle in @("SOFTWARE\Classes\Directory\shell\$NomCle\command", "SOFTWARE\Classes\Directory\Background\shell\$NomCle\command")) {
+foreach ($cle in @("SOFTWARE\Classes\Directory\shell\$NomCle\command", "SOFTWARE\Classes\Directory\Background\shell\$NomCle\command",
+                   "SOFTWARE\Classes\Directory\shell\$NomCleSous\command", "SOFTWARE\Classes\Directory\Background\shell\$NomCleSous\command")) {
     $k = $hklm.OpenSubKey($cle); $val = $null
     if ($k) { $val = $k.GetValue(''); $k.Close() }
     if (-not $val -or $val.IndexOf($Exe, [StringComparison]::OrdinalIgnoreCase) -lt 0) { $manque += $cle }
+    elseif ($cle -like "*$NomCleSous*" -and $val -notlike '*--sous-dossiers*') { $manque += "$cle (sans --sous-dossiers)" }
 }
 $hklm.Close()
 
@@ -145,6 +156,6 @@ if ($manque.Count) {
     Write-Log ("ECHEC, relu : manque " + ($manque -join ', '))
     exit 1
 }
-Write-Log "OK, relu : exe $verPaquet, raccourci, clic droit dossier et fond de dossier"
+Write-Log "OK, relu : exe $verPaquet, raccourci, clic droit dossier et fond de dossier (simple et avec sous-dossiers)"
 Write-Log "=== FIN INSTALLATION : $AppName ==="
 exit 0
