@@ -390,7 +390,34 @@ namespace FusionPDF
                         Attendu(r.Pages == 6, r.Pages + " pages relues");
                         Attendu(r.Renommes == 3 && File.Exists(Path.Combine(d, "001_pièce [1].pdf")), "renommage après fusion");
                         Attendu(Directory.GetFiles(d, ".~FusionPDF-*").Length == 0, "temporaire resté");
-                        return "6 pages relues, 3 sources renommées";
+                        string signets = string.Join(" | ", Signets.Lire(q, sortie));
+                        Attendu(!r.SignetsAbsents && r.Signets == 3, "signets : " + r.Signets + (r.SignetsAbsents ? " (absents, voir le journal)" : ""));
+                        Attendu(signets == "pièce [1]@1 | pièce [2]@2 | pièce [3]@4", signets);
+                        return "6 pages relues, 3 sources renommées, signets " + signets;
+                    });
+
+                    // Demande du 30/10 : un signet par fichier, et un par dossier
+                    // quand la liste vient de sous-dossiers (les « Page 1 » de
+                    // chaque chapitre seraient sinon indiscernables).
+                    Verifier("Signets rangés par sous-dossier", delegate
+                    {
+                        string d = Path.Combine(tmp, "signets");
+                        List<ElementPdf> l = new List<ElementPdf>();
+                        foreach (string f in new[] { "Chapitre é\\Page 1.pdf", "Chapitre é\\Page 2.pdf", "Chapitre é\\Annexe\\Page 1.pdf",
+                                                     "Chapitre 2\\Page 1.pdf", "Fin.pdf" })
+                        {
+                            string c = Path.Combine(d, f);
+                            Directory.CreateDirectory(Path.GetDirectoryName(c));
+                            PdfDeTest.Ecrire(c, f == "Chapitre é\\Page 2.pdf" ? 2 : 1);
+                            l.Add(new ElementPdf(c));
+                        }
+                        ResultatFusion r = Fusion.Executer(q, l, Path.Combine(d, "x_FUSION_test.pdf"), false, delegate { });
+                        Attendu(r.Pages == 6, r.Pages + " pages relues");
+                        string obtenu = string.Join(" | ", Signets.Lire(q, r.Sortie));
+                        string attendu = "Chapitre é@1 | >Page 1@1 | >Page 2@2 | >Annexe@4 | >>Page 1@4 | Chapitre 2@5 | >Page 1@5 | Fin@6";
+                        Attendu(obtenu == attendu, obtenu);
+                        Attendu(r.Signets == 8, r.Signets + " signets annoncés");
+                        return obtenu;
                     });
 
                     Verifier("PDF protégé par mot de passe reconnu et nommé", delegate

@@ -12,6 +12,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Web.Script.Serialization;
 using Microsoft.Win32;
 
 namespace FusionPDF
@@ -650,6 +651,243 @@ namespace FusionPDF
         {
             return Executer("--encrypt " + motDePasse + " " + motDePasse + " 256 -- "
                             + Guillemets(source) + " " + Guillemets(sortie), 60000, null);
+        }
+    }
+
+    /// <summary>
+    /// Signets du PDF fusionné (demande du 30/10) : un par fichier source, posé
+    /// sur sa première page et titré de son nom sans « .pdf ». Les fichiers
+    /// venus de sous-dossiers sont rangés sous un signet par dossier, qui pointe
+    /// sur la première page de ce dossier : sans cela, les « Page 1 » de chaque
+    /// chapitre seraient indiscernables. Fichiers d'un seul dossier : liste plate.
+    ///
+    /// qpdf --pages ne crée pas de signets. On relit le PDF fusionné en JSON
+    /// (pages et catalogue), puis on lui ajoute l'arbre /Outlines par
+    /// --update-from-json (qpdf 11 et plus). Le catalogue est réécrit à partir
+    /// de sa lecture : ce qu'il portait déjà (formulaire…) est conservé.
+    /// </summary>
+    public static class Signets
+    {
+        sealed class Noeud
+        {
+            public string Titre;
+            public string Page;     // objet de la page visée, « 12 0 R »
+            public string Objet;    // objet du signet lui-même
+            public List<Noeud> Enfants = new List<Noeud>();
+        }
+
+        /// <summary>Un signet relu dans un PDF, dans l'ordre de l'arbre.</summary>
+        public sealed class Lu
+        {
+            public int Niveau;
+            public string Titre;
+            public int Page;        // à partir de 1, 0 si illisible
+
+            public override string ToString()
+            {
+                return new string('>', Niveau) + Titre + "@" + Page.ToString(CultureInfo.InvariantCulture);
+            }
+        }
+
+        static readonly Regex MotifRef = new Regex(@"^(\d+) (\d+) R$");
+
+        /// <summary>
+        /// Écrit sortie = entree + signets. chemins et pages : un par fichier
+        /// source, dans l'ordre de la fusion (pages = son nombre de pages).
+        /// Renvoie le nombre de signets posés, relus dans sortie ; 0 si aucun
+        /// à poser, et sortie n'est alors pas écrit.
+        /// </summary>
+        public static int Ajouter(Qpdf qpdf, string entree, string sortie, IList<string> chemins, IList<int> pages)
+        {
+            Dictionary<string, object> lu = LireJson(qpdf, entree, "--json-key=pages --json-key=qpdf --json-object=trailer");
+            object[] pagesPdf = Tableau(lu["pages"]);
+            object[] q = Tableau(lu["qpdf"]);
+            Dictionary<string, object> entete = (Dictionary<string, object>)q[0];
+            string racine = (string)Valeur((Dictionary<string, object>)q[1], "trailer")["/Root"];
+            Match m = MotifRef.Match(racine ?? "");
+            if (!m.Success) throw new Exception("catalogue introuvable dans le trailer : " + racine);
+            Dictionary<string, object> catalogue = Valeur(
+                (Dictionary<string, object>)Tableau(LireJson(qpdf, entree, "--json-key=qpdf --json-object=" + m.Groups[1].Value + "," + m.Groups[2].Value)["qpdf"])[1],
+                "obj:" + racine);
+
+            // --- arbre : dossiers communs retirés, un nœud par sous-dossier ---
+            Noeud arbre = new Noeud();
+            int commun = DossierCommun(chemins).Length;
+            List<Noeud> pile = new List<Noeud>();   // dossiers ouverts, du plus haut au plus bas
+            int debut = 0;
+            for (int i = 0; i < chemins.Count; i++)
+            {
+                int n = Math.Max(0, pages[i]);
+                if (n == 0 || debut >= pagesPdf.Length) { debut += n; continue; }
+                string page = (string)((Dictionary<string, object>)pagesPdf[debut])["object"];
+                string[] dossiers = Segments(Path.GetDirectoryName(chemins[i])).Skip(commun).ToArray();
+
+                // Un dossier n'est rouvert que s'il suit directement : réordonnée
+                // à la main, la liste peut y revenir plus loin, sous un nouveau signet.
+                int k = 0;
+                while (k < pile.Count && k < dossiers.Length && string.Equals(pile[k].Titre, dossiers[k], StringComparison.OrdinalIgnoreCase)) k++;
+                pile.RemoveRange(k, pile.Count - k);
+                for (; k < dossiers.Length; k++)
+                {
+                    Noeud d = new Noeud { Titre = dossiers[k], Page = page };
+                    (k == 0 ? arbre : pile[k - 1]).Enfants.Add(d);
+                    pile.Add(d);
+                }
+                (pile.Count == 0 ? arbre : pile[pile.Count - 1]).Enfants.Add(
+                    new Noeud { Titre = Path.GetFileNameWithoutExtension(chemins[i]), Page = page });
+                debut += n;
+            }
+            if (arbre.Enfants.Count == 0) return 0;
+
+            // --- objets à ajouter, numérotés après le dernier du fichier -------
+            int suivant = Convert.ToInt32(entete["maxobjectid"], CultureInfo.InvariantCulture) + 1;
+            Numeroter(arbre, ref suivant);
+            Dictionary<string, object> maj = new Dictionary<string, object>();
+            int total = Ecrire(arbre, maj);
+            Dictionary<string, object> racineSignets = new Dictionary<string, object>();
+            racineSignets["/Type"] = "/Outlines";
+            racineSignets["/First"] = arbre.Enfants[0].Objet;
+            racineSignets["/Last"] = arbre.Enfants[arbre.Enfants.Count - 1].Objet;
+            racineSignets["/Count"] = total;
+            maj["obj:" + arbre.Objet] = Objet(racineSignets);
+            catalogue["/Outlines"] = arbre.Objet;
+            catalogue["/PageMode"] = "/UseOutlines";   // le volet des signets s'ouvre avec le document
+            maj["obj:" + racine] = Objet(catalogue);
+
+            Dictionary<string, object> doc = new Dictionary<string, object>();
+            doc["qpdf"] = new object[] { entete, maj };
+            string fichier = Path.Combine(Path.GetTempPath(), "FusionPDF-signets-" + Fichiers.Court() + ".json");
+            File.WriteAllText(fichier, Json().Serialize(doc), new UTF8Encoding(false));
+            try
+            {
+                ResultatProcessus r = qpdf.Executer(G(entree) + " " + G(sortie) + " " + G("--update-from-json=" + fichier), 30 * 60 * 1000, null);
+                if (r.Code != 0 && r.Code != 3)
+                    throw new Exception("qpdf --update-from-json a rendu " + r.Code + " : " + r.Erreurs.Trim());
+            }
+            finally
+            {
+                try { File.Delete(fichier); } catch { }
+            }
+
+            // Conclusion sur le fichier relu.
+            int relus = Lire(qpdf, sortie).Count;
+            if (relus != total) throw new Exception(relus + " signet(s) relu(s), " + total + " attendu(s)");
+            return total;
+        }
+
+        public static List<Lu> Lire(Qpdf qpdf, string pdf)
+        {
+            List<Lu> res = new List<Lu>();
+            object o;
+            if (LireJson(qpdf, pdf, "--json-key=outlines").TryGetValue("outlines", out o)) Parcourir(Tableau(o), 0, res);
+            return res;
+        }
+
+        static void Parcourir(object[] liste, int niveau, List<Lu> res)
+        {
+            foreach (object e in liste)
+            {
+                Dictionary<string, object> s = (Dictionary<string, object>)e;
+                object titre, page, enfants;
+                s.TryGetValue("title", out titre);
+                s.TryGetValue("destpageposfrom1", out page);
+                res.Add(new Lu { Niveau = niveau, Titre = titre as string ?? "",
+                                 Page = page == null ? 0 : Convert.ToInt32(page, CultureInfo.InvariantCulture) });
+                if (s.TryGetValue("kids", out enfants)) Parcourir(Tableau(enfants), niveau + 1, res);
+            }
+        }
+
+        static void Numeroter(Noeud n, ref int suivant)
+        {
+            n.Objet = suivant++ + " 0 R";
+            foreach (Noeud e in n.Enfants) Numeroter(e, ref suivant);
+        }
+
+        /// <summary>Écrit les enfants de parent ; renvoie le nombre de ses descendants (tous dépliés).</summary>
+        static int Ecrire(Noeud parent, Dictionary<string, object> maj)
+        {
+            int total = 0;
+            for (int i = 0; i < parent.Enfants.Count; i++)
+            {
+                Noeud e = parent.Enfants[i];
+                Dictionary<string, object> s = new Dictionary<string, object>();
+                s["/Title"] = "u:" + e.Titre;
+                s["/Parent"] = parent.Objet;
+                s["/Dest"] = new object[] { e.Page, "/XYZ", null, null, null };   // zoom inchangé
+                if (i > 0) s["/Prev"] = parent.Enfants[i - 1].Objet;
+                if (i < parent.Enfants.Count - 1) s["/Next"] = parent.Enfants[i + 1].Objet;
+                if (e.Enfants.Count > 0)
+                {
+                    s["/First"] = e.Enfants[0].Objet;
+                    s["/Last"] = e.Enfants[e.Enfants.Count - 1].Objet;
+                    int sous = Ecrire(e, maj);
+                    s["/Count"] = sous;
+                    total += sous;
+                }
+                maj["obj:" + e.Objet] = Objet(s);
+                total++;
+            }
+            return total;
+        }
+
+        static string[] Segments(string dossier)
+        {
+            return (dossier ?? "").TrimEnd('\\').Split('\\');
+        }
+
+        static string[] DossierCommun(IList<string> chemins)
+        {
+            string[] commun = null;
+            foreach (string c in chemins)
+            {
+                string[] s = Segments(Path.GetDirectoryName(c));
+                if (commun == null) { commun = s; continue; }
+                int k = 0;
+                while (k < commun.Length && k < s.Length && string.Equals(commun[k], s[k], StringComparison.OrdinalIgnoreCase)) k++;
+                commun = commun.Take(k).ToArray();
+            }
+            return commun ?? new string[0];
+        }
+
+        static Dictionary<string, object> LireJson(Qpdf qpdf, string pdf, string options)
+        {
+            ResultatProcessus r = qpdf.Executer("--json=2 " + options + " " + G(pdf), 120000, null);
+            if (r.Code != 0 && r.Code != 3)
+                throw new Exception("qpdf --json " + options + " a rendu " + r.Code + " : " + r.Erreurs.Trim());
+            return (Dictionary<string, object>)Json().DeserializeObject(r.Sortie);
+        }
+
+        static Dictionary<string, object> Valeur(Dictionary<string, object> objets, string cle)
+        {
+            return (Dictionary<string, object>)((Dictionary<string, object>)objets[cle])["value"];
+        }
+
+        static Dictionary<string, object> Objet(Dictionary<string, object> valeur)
+        {
+            Dictionary<string, object> o = new Dictionary<string, object>();
+            o["value"] = valeur;
+            return o;
+        }
+
+        static object[] Tableau(object o)
+        {
+            object[] t = o as object[];
+            if (t != null) return t;
+            System.Collections.ArrayList a = o as System.Collections.ArrayList;
+            return a != null ? a.ToArray() : new object[0];
+        }
+
+        static JavaScriptSerializer Json()
+        {
+            JavaScriptSerializer js = new JavaScriptSerializer();
+            js.MaxJsonLength = int.MaxValue;
+            js.RecursionLimit = 1000;
+            return js;
+        }
+
+        static string G(string s)
+        {
+            return "\"" + s + "\"";
         }
     }
 

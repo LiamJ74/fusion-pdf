@@ -1343,6 +1343,8 @@ namespace FusionPDF
                 details.Add(L("Attention : {0} attendues, {1} relues.", Format.Pages(r.PagesAttendues), r.Pages));
             if (r.Avertissements)
                 details.Add(L("qpdf a signalé qu'un ou plusieurs fichiers sources sont légèrement abîmés ; le résultat reste lisible."));
+            if (r.SignetsAbsents)
+                details.Add(L("Les signets n'ont pas pu être ajoutés ; la fusion, elle, est complète."));
             if (r.Csv != null && r.ErreurRenommage == null)
                 details.Add(L("{0} ; anciens noms dans {1}.", Pl(r.Renommes, "fichier renommé", "fichiers renommés"), Q(Path.GetFileName(r.Csv))));
 

@@ -98,6 +98,8 @@ $refs = @(
     (Join-Path $wpf 'WindowsBase.dll'), (Join-Path $base 'System.Xaml.dll'),
     (Join-Path $base 'System.dll'), (Join-Path $base 'System.Core.dll'), (Join-Path $base 'System.Xml.dll'),
     (Join-Path $facade 'System.Runtime.dll'),
+    # Signets : lecture et ecriture du JSON de qpdf (JavaScriptSerializer).
+    (Join-Path $base 'System.Web.Extensions.dll'),
     # Apercu : metadonnees WinRT livrees avec Windows, pas de SDK.
     (Join-Path $winmd 'Windows.Foundation.winmd'), (Join-Path $winmd 'Windows.Data.winmd'),
     (Join-Path $winmd 'Windows.Storage.winmd')

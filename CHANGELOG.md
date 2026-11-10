@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.6.0 — 2026-10-30
+
+- **Bookmarks**: the merged PDF gets one bookmark per source file, titled with
+  the file name (without `.pdf`) and pointing to its first page. Merging 10 PDFs
+  gives 10 bookmarks. The bookmarks pane opens with the document.
+- Files coming from subfolders are grouped under one bookmark per folder, so the
+  `Page 1` of each chapter can be told apart. Files from a single folder give a
+  flat list.
+- Bookmarks are added with `qpdf --update-from-json` (qpdf 11 or later). If that
+  step fails, the merge is kept without bookmarks and the end banner says so.
+
 ## 1.5.0 — 2026-10-21
 
 - **The output name is required.** The *Output file* box now holds only the part

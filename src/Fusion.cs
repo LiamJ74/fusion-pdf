@@ -235,6 +235,8 @@ namespace FusionPDF
         public int PagesAttendues;
         public int Fichiers;
         public bool Avertissements;
+        public int Signets;
+        public bool SignetsAbsents;
         public string Csv;
         public int Renommes;
         public ErreurUtilisateur ErreurRenommage;
@@ -352,6 +354,27 @@ namespace FusionPDF
             if (!File.Exists(temp))
                 throw new ErreurUtilisateur(L("qpdf n'a produit aucun fichier."), L("Le détail technique est dans le journal : {0}", Journal.Chemin));
 
+            // --- signets : un par fichier ------------------------------------
+            // Un échec ici ne fait jamais échouer la fusion : on garde le
+            // fichier sans signets, et le bandeau de fin le dit.
+            progres(95, L("Ajout des signets…"));
+            int signets = -1;
+            string tempSignets = Path.Combine(dossier, ".~FusionPDF-" + Fichiers.Court() + ".pdf");
+            try
+            {
+                signets = Signets.Ajouter(qpdf, temp, tempSignets, ordre.Select(x => x.Chemin).ToList(), ordre.Select(x => x.Pages).ToList());
+                if (signets > 0)
+                {
+                    Supprimer(temp);
+                    temp = tempSignets;
+                }
+            }
+            catch (Exception ex)
+            {
+                Supprimer(tempSignets);
+                Journal.Ecrire("Signets non ajoutés, fusion gardée sans signets : " + ex);
+            }
+
             try
             {
                 if (File.Exists(sortie)) File.Delete(sortie);
@@ -387,7 +410,10 @@ namespace FusionPDF
             res.PagesAttendues = ordre.Sum(x => Math.Max(0, x.Pages));
             res.Fichiers = n;
             res.Avertissements = r.Code == 3;
-            Journal.Ecrire("Fusion terminée : " + sortie + ", " + relu.Pages + " pages relues (" + res.PagesAttendues + " attendues), code qpdf " + r.Code);
+            res.Signets = Math.Max(0, signets);
+            res.SignetsAbsents = signets < 0;
+            Journal.Ecrire("Fusion terminée : " + sortie + ", " + relu.Pages + " pages relues (" + res.PagesAttendues + " attendues), "
+                           + (signets < 0 ? "sans signets" : signets + " signet(s)") + ", code qpdf " + r.Code);
 
             // --- renommage, seulement une fois la fusion réussie ------------
             if (renommer)
